@@ -69,8 +69,12 @@ if (!useMockDb) {
   mongoose.connect(mongoUri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    tls: true,
+    tlsAllowInvalidCertificates: true, // Only for testing - remove in production with proper certificates
+    tlsAllowInvalidHostnames: true    // Only for testing - remove in production with proper certificates
   }).catch(err => {
     console.log('MongoDB connection failed, using mock database instead');
+    console.error('MongoDB connection error:', err);
     useMockDb = true;
     mockDb = require('./utils/mockDb');
     // Seed mock database with sample data
