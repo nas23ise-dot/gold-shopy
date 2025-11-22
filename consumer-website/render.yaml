@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: gold-shopy
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: USE_MOCK_DB
+        value: false
+      - key: MONGODB_URI
+        value: YOUR_MONGODB_CONNECTION_STRING_HERE
+      - key: JWT_SECRET
+        value: goldshopsecret
+      - key: PORT
+        value: 10000
