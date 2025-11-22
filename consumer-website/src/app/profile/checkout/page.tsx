@@ -16,8 +16,10 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { removeFromCart } from '@/lib/cartUtils';
+import { orderApi } from '@/lib/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 
 interface CartItem {
   id: number;
@@ -31,19 +33,22 @@ interface CartItem {
 
 const CheckoutPage = () => {
   const router = useRouter();
+  const { user } = useAuth();
   const { cartItems, refreshCart } = useCart();
   const [activeStep, setActiveStep] = useState(1);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Form data states
   const [shippingInfo, setShippingInfo] = useState({
-    fullName: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+91 98765 43210',
-    address: '123 Main Street',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    zipCode: '560001',
+    fullName: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
     country: 'India'
   });
 
@@ -59,14 +64,71 @@ const CheckoutPage = () => {
   const tax = subtotal * 0.03;
   const total = subtotal + shipping + tax;
 
-  const handlePlaceOrder = () => {
-    // Simulate order placement
-    setTimeout(() => {
-      // Clear cart
+  // Prefill shipping info with user data if available
+  useEffect(() => {
+    if (user) {
+      setShippingInfo(prev => ({
+        ...prev,
+        fullName: user.name || '',
+        email: user.email || '',
+        phone: user.phone || ''
+      }));
+    }
+  }, [user]);
+
+  const handlePlaceOrder = async () => {
+    if (!user || !user.token) {
+      setError('You must be logged in to place an order');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Prepare order data
+      const orderData = {
+        items: cartItems.map(item => ({
+          productId: item.id,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        totalAmount: total,
+        shippingAddress: {
+          name: shippingInfo.fullName,
+          address: shippingInfo.address,
+          city: shippingInfo.city,
+          state: shippingInfo.state,
+          zipCode: shippingInfo.zipCode,
+          country: shippingInfo.country,
+          phone: shippingInfo.phone
+        },
+        paymentMethod: 'Credit Card'
+      };
+
+      // Create order through API
+      const response = await orderApi.createOrder(user.token, orderData);
+      
+      // Store order data in localStorage for confirmation page
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('lastOrder', JSON.stringify({
+          ...response,
+          items: cartItems // Use cart items for display
+        }));
+      }
+      
+      // Clear cart after successful order
       cartItems.forEach(item => removeFromCart(item.id));
       refreshCart(); // Refresh cart context after clearing cart
-      router.push('/profile/order-confirmation');
-    }, 1500);
+      
+      // Show order confirmation
+      setOrderPlaced(true);
+    } catch (err: any) {
+      console.error('Error placing order:', err);
+      setError(err.message || 'Failed to place order. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,14 +166,6 @@ const CheckoutPage = () => {
             <div className="bg-gray-50 rounded-lg p-6 mb-6 text-left">
               <h3 className="font-semibold text-gray-900 mb-3">Order Summary</h3>
               <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Order Number:</span>
-                  <span className="font-medium">#ORD-{Math.floor(Math.random() * 1000000)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Date:</span>
-                  <span className="font-medium">{new Date().toLocaleDateString()}</span>
-                </div>
                 <div className="flex justify-between">
                   <span>Total Amount:</span>
                   <span className="font-medium text-amber-600">₹{total.toLocaleString()}</span>
@@ -158,6 +212,12 @@ const CheckoutPage = () => {
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Checkout</h1>
             <p className="text-lg text-gray-600">Complete your purchase</p>
           </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <p className="text-red-700">{error}</p>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Checkout Steps */}
@@ -213,6 +273,7 @@ const CheckoutPage = () => {
                             onChange={handleInputChange}
                             className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
                             placeholder="Full Name"
+                            required
                           />
                         </div>
                       </div>
@@ -232,6 +293,7 @@ const CheckoutPage = () => {
                             onChange={handleInputChange}
                             className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
                             placeholder="Email Address"
+                            required
                           />
                         </div>
                       </div>
@@ -251,6 +313,7 @@ const CheckoutPage = () => {
                             onChange={handleInputChange}
                             className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
                             placeholder="Phone Number"
+                            required
                           />
                         </div>
                       </div>
@@ -288,6 +351,7 @@ const CheckoutPage = () => {
                         rows={3}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
                         placeholder="Street Address"
+                        required
                       ></textarea>
                     </div>
                     
@@ -303,6 +367,7 @@ const CheckoutPage = () => {
                           onChange={handleInputChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
                           placeholder="City"
+                          required
                         />
                       </div>
                       
@@ -317,6 +382,7 @@ const CheckoutPage = () => {
                           onChange={handleInputChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
                           placeholder="State"
+                          required
                         />
                       </div>
                       
@@ -331,6 +397,7 @@ const CheckoutPage = () => {
                           onChange={handleInputChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
                           placeholder="ZIP Code"
+                          required
                         />
                       </div>
                     </div>
@@ -376,6 +443,7 @@ const CheckoutPage = () => {
                           onChange={handlePaymentInputChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
                           placeholder="1234 5678 9012 3456"
+                          required
                         />
                       </div>
                       
@@ -390,6 +458,7 @@ const CheckoutPage = () => {
                           onChange={handlePaymentInputChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
                           placeholder="MM/YY"
+                          required
                         />
                       </div>
                       
@@ -404,6 +473,7 @@ const CheckoutPage = () => {
                           onChange={handlePaymentInputChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
                           placeholder="123"
+                          required
                         />
                       </div>
                       
@@ -418,6 +488,7 @@ const CheckoutPage = () => {
                           onChange={handlePaymentInputChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
                           placeholder="Full Name"
+                          required
                         />
                       </div>
                     </div>
@@ -515,10 +586,20 @@ const CheckoutPage = () => {
                       </button>
                       <button
                         onClick={handlePlaceOrder}
-                        className="px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors flex items-center"
+                        disabled={loading}
+                        className="px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors flex items-center disabled:opacity-50"
                       >
-                        <Package size={20} className="mr-2" />
-                        Place Order
+                        {loading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Placing Order...
+                          </>
+                        ) : (
+                          <>
+                            <Package size={20} className="mr-2" />
+                            Place Order
+                          </>
+                        )}
                       </button>
                     </div>
                   </motion.div>

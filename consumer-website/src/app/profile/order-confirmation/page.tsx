@@ -1,41 +1,42 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CheckCircle, Package, Truck, CreditCard } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 const OrderConfirmationPage = () => {
-  // In a real application, this data would come from the order placement process
-  const orderData = {
-    orderId: 'ORD-789456123',
-    orderDate: new Date().toLocaleDateString(),
-    totalAmount: 480000,
-    items: [
-      {
-        id: 1,
-        name: 'Classic Gold Chain Necklace',
-        price: 185000,
-        quantity: 1,
-        image: 'https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Chain'
-      },
-      {
-        id: 2,
-        name: 'Diamond Stud Earrings',
-        price: 295000,
-        quantity: 1,
-        image: 'https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Earrings'
+  const [orderData, setOrderData] = useState<any>(null);
+
+  // Get order data from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedOrder = localStorage.getItem('lastOrder');
+      if (storedOrder) {
+        try {
+          const parsedOrder = JSON.parse(storedOrder);
+          setOrderData(parsedOrder);
+          // Clear the order data after displaying it
+          localStorage.removeItem('lastOrder');
+        } catch (e) {
+          console.error('Error parsing order data:', e);
+        }
       }
-    ],
-    shippingAddress: {
-      name: 'John Doe',
-      address: '123 Main Street',
-      city: 'Bangalore',
-      state: 'Karnataka',
-      zipCode: '560001',
-      country: 'India'
     }
-  };
+  }, []);
+
+  if (!orderData) {
+    return (
+      <ProtectedRoute>
+        <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Processing your order...</p>
+          </div>
+        </div>
+      </ProtectedRoute>
+    );
+  }
 
   return (
     <ProtectedRoute>
@@ -56,7 +57,7 @@ const OrderConfirmationPage = () => {
                   <Package className="w-5 h-5 text-amber-600 mr-2" />
                   <h3 className="font-semibold text-gray-900">Order ID</h3>
                 </div>
-                <p className="text-amber-600 font-medium">{orderData.orderId}</p>
+                <p className="text-amber-600 font-medium">{orderData.orderNumber || orderData._id}</p>
               </div>
               
               <div className="bg-amber-50 rounded-lg p-4 border border-amber-100">
@@ -64,7 +65,9 @@ const OrderConfirmationPage = () => {
                   <CreditCard className="w-5 h-5 text-amber-600 mr-2" />
                   <h3 className="font-semibold text-gray-900">Order Date</h3>
                 </div>
-                <p className="text-amber-600 font-medium">{orderData.orderDate}</p>
+                <p className="text-amber-600 font-medium">
+                  {orderData.createdAt ? new Date(orderData.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}
+                </p>
               </div>
               
               <div className="bg-amber-50 rounded-lg p-4 border border-amber-100">
@@ -72,7 +75,7 @@ const OrderConfirmationPage = () => {
                   <Truck className="w-5 h-5 text-amber-600 mr-2" />
                   <h3 className="font-semibold text-gray-900">Total Amount</h3>
                 </div>
-                <p className="text-amber-600 font-medium">₹{orderData.totalAmount.toLocaleString()}</p>
+                <p className="text-amber-600 font-medium">₹{(orderData.totalAmount || 0).toLocaleString()}</p>
               </div>
             </div>
 
@@ -82,8 +85,8 @@ const OrderConfirmationPage = () => {
               </div>
               <div className="p-4">
                 <div className="space-y-4">
-                  {orderData.items.map((item) => (
-                    <div key={item.id} className="flex items-center">
+                  {orderData.items && orderData.items.map((item: any) => (
+                    <div key={item.id || item.productId} className="flex items-center">
                       <div className="w-16 h-16 flex-shrink-0">
                         <img
                           src={item.image}
@@ -95,8 +98,8 @@ const OrderConfirmationPage = () => {
                         <h4 className="font-medium text-gray-900">{item.name}</h4>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium text-gray-900">₹{item.price.toLocaleString()}</p>
-                        <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                        <p className="font-medium text-gray-900">₹{(item.price || 0).toLocaleString()}</p>
+                        <p className="text-sm text-gray-600">Qty: {item.quantity || 1}</p>
                       </div>
                     </div>
                   ))}
@@ -104,19 +107,21 @@ const OrderConfirmationPage = () => {
               </div>
             </div>
 
-            <div className="border border-gray-200 rounded-lg mb-8">
-              <div className="p-4 border-b border-gray-200">
-                <h3 className="font-semibold text-gray-900">Shipping Address</h3>
+            {orderData.shippingAddress && (
+              <div className="border border-gray-200 rounded-lg mb-8">
+                <div className="p-4 border-b border-gray-200">
+                  <h3 className="font-semibold text-gray-900">Shipping Address</h3>
+                </div>
+                <div className="p-4">
+                  <p className="text-gray-900">{orderData.shippingAddress.name}</p>
+                  <p className="text-gray-600">{orderData.shippingAddress.address}</p>
+                  <p className="text-gray-600">
+                    {orderData.shippingAddress.city}, {orderData.shippingAddress.state} {orderData.shippingAddress.zipCode}
+                  </p>
+                  <p className="text-gray-600">{orderData.shippingAddress.country}</p>
+                </div>
               </div>
-              <div className="p-4">
-                <p className="text-gray-900">{orderData.shippingAddress.name}</p>
-                <p className="text-gray-600">{orderData.shippingAddress.address}</p>
-                <p className="text-gray-600">
-                  {orderData.shippingAddress.city}, {orderData.shippingAddress.state} {orderData.shippingAddress.zipCode}
-                </p>
-                <p className="text-gray-600">{orderData.shippingAddress.country}</p>
-              </div>
-            </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
