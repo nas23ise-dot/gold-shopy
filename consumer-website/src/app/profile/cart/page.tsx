@@ -21,6 +21,18 @@ interface CartItem {
 const CartPage = () => {
   const { cartItems, refreshCart, forceRefresh } = useCart();
   
+  // Filter out invalid items
+  const validCartItems = cartItems.filter(item => 
+    item && 
+    item.id && 
+    item.quantity > 0 && 
+    typeof item.price === 'number' && 
+    item.price > 0 &&
+    item.name && 
+    item.name !== 'undefined' &&
+    item.name.trim() !== ''
+  );
+  
   const handleUpdateQuantity = async (id: number, newQuantity: number) => {
     await updateCartQuantity(id, newQuantity);
     await forceRefresh(); // Use force refresh to ensure UI updates
@@ -31,7 +43,7 @@ const CartPage = () => {
     await forceRefresh(); // Use force refresh to ensure UI updates
   };
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = validCartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shipping = subtotal > 100000 ? 0 : 500;
   const tax = subtotal * 0.03;
   const total = subtotal + shipping + tax;
@@ -57,14 +69,14 @@ const CartPage = () => {
             <p className="text-lg text-gray-600">Review and manage your items before checkout</p>
           </div>
 
-          {cartItems.length > 0 ? (
+          {validCartItems.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6">Cart Items ({cartItems.reduce((sum, item) => sum + item.quantity, 0)})</h2>
+                  <h2 className="text-xl font-bold text-gray-900 mb-6">Cart Items ({validCartItems.reduce((sum, item) => sum + item.quantity, 0)})</h2>
                 
                   <div className="space-y-6">
-                    {cartItems.map((item) => (
+                    {validCartItems.map((item) => (
                       <motion.div
                         key={item.id}
                         initial={{ opacity: 0, y: 20 }}
