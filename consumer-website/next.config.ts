@@ -9,7 +9,15 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Removed turbopack root configuration that was causing deployment issues
+  // Configure for static export on Vercel
+  distDir: 'out',
+  // Ensure proper handling of static export
+  exportPathMap: async function () {
+    return {
+      '/': { page: '/' },
+      // Add other static routes as needed
+    };
+  },
 };
 
 export default nextConfig;
