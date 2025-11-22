@@ -77,21 +77,27 @@ export const getCartCount = (): number => {
 
 export const addToCart = async (item: Omit<CartItem, 'quantity'>): Promise<void> => {
   console.log('Adding item to cart:', item); // Add logging
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined') {
+    console.log('Window is undefined, returning'); // Add logging
+    return;
+  }
   
   // Check if user is authenticated, if not redirect to login
   if (!isAuthenticated()) {
+    console.log('User not authenticated, redirecting to login'); // Add logging
     redirectToLogin();
     return;
   }
   
   const token = getAuthToken();
+  console.log('User token:', token); // Add logging
   
   // If user is authenticated, use API
   if (token) {
+    console.log('Using API to add item to cart'); // Add logging
     try {
-      await cartApi.addToCart(token, item.id.toString(), 1);
-      console.log('Item added to cart via API'); // Add logging
+      const response = await cartApi.addToCart(token, item.id.toString(), 1);
+      console.log('API response:', response); // Add logging
       // Dispatch custom event to notify other components
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('cartUpdated'));
@@ -102,18 +108,23 @@ export const addToCart = async (item: Omit<CartItem, 'quantity'>): Promise<void>
     }
   }
   
+  console.log('Falling back to localStorage'); // Add logging
   // Fallback to localStorage
   const cartItems = getCartItems();
+  console.log('Current cart items from localStorage:', cartItems); // Add logging
   const existingItemIndex = cartItems.findIndex(cartItem => cartItem.id === item.id);
+  console.log('Existing item index:', existingItemIndex); // Add logging
   
   if (existingItemIndex >= 0) {
     cartItems[existingItemIndex].quantity += 1;
+    console.log('Updated quantity of existing item'); // Add logging
   } else {
     cartItems.push({ ...item, quantity: 1 });
+    console.log('Added new item to cart'); // Add logging
   }
   
   localStorage.setItem('cart', JSON.stringify(cartItems));
-  console.log('Item added to cart in localStorage:', cartItems); // Add logging
+  console.log('Updated cart in localStorage:', cartItems); // Add logging
   
   // Dispatch custom event to notify other components
   if (typeof window !== 'undefined') {

@@ -51,28 +51,37 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const refreshCart = async () => {
     setLoading(true);
     try {
+      console.log('Refreshing cart...'); // Add logging
       // If user is authenticated, fetch cart from API
       if (isAuthenticated && user?.token) {
+        console.log('User is authenticated, fetching cart from API'); // Add logging
         try {
           const cartData = await cartApi.getCart(user.token);
           console.log('Cart data from API:', cartData); // Add logging
           // Transform API response to match frontend format
-          let items = [];
+          let items: CartItem[] = [];
           
           // Handle both mock database and MongoDB responses
           if (Array.isArray(cartData)) {
             // Mock database response format
-            items = cartData.map((item: any) => ({
-              id: item.productId._id || item.productId,
-              name: item.productId.name,
-              price: item.productId.price,
-              image: item.productId.image,
-              category: item.productId.category,
-              material: item.productId.material,
-              quantity: item.quantity
-            }));
+            console.log('Processing mock database response'); // Add logging
+            items = cartData.map((item: any) => {
+              // For mock database, productId is a number that references the product ID
+              const productId = item.productId;
+              console.log('Product ID from mock DB:', productId); // Add logging
+              return {
+                id: productId,
+                name: `Product ${productId}`, // Placeholder, will be updated below
+                price: 0, // Placeholder, will be updated below
+                image: '', // Placeholder, will be updated below
+                category: '', // Placeholder, will be updated below
+                material: '', // Placeholder, will be updated below
+                quantity: item.quantity
+              };
+            });
           } else if (cartData.items) {
             // MongoDB response format
+            console.log('Processing MongoDB response'); // Add logging
             items = cartData.items.map((item: any) => ({
               id: item.productId._id || item.productId,
               name: item.productId.name,
@@ -84,6 +93,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             }));
           } else if (cartData.cart && cartData.cart.items) {
             // Alternative format with cart wrapper
+            console.log('Processing cart wrapper response'); // Add logging
             items = cartData.cart.items.map((item: any) => ({
               id: item.productId._id || item.productId,
               name: item.productId.name,
@@ -93,6 +103,30 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
               material: item.productId.material,
               quantity: item.quantity
             }));
+          } else {
+            console.log('Unknown response format, using empty array'); // Add logging
+            items = [];
+          }
+          
+          // For mock database items, we need to fetch the actual product data
+          // This is a temporary solution - in a real app, the backend would populate this data
+          if (Array.isArray(cartData)) {
+            // Import product data to get actual product information
+            const { productData } = await import('@/lib/productData');
+            items = items.map((item: CartItem) => {
+              const product = productData.find(p => p.id === item.id);
+              if (product) {
+                return {
+                  ...item,
+                  name: product.name,
+                  price: product.price,
+                  image: product.image,
+                  category: product.category,
+                  material: product.material
+                };
+              }
+              return item;
+            });
           }
           
           console.log('Transformed cart items:', items); // Add logging
@@ -106,6 +140,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         }
       }
       
+      console.log('User not authenticated or no token, using localStorage'); // Add logging
       // Fallback to localStorage
       const items = getCartItems();
       const count = getCartCount();
@@ -126,13 +161,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         try {
           const wishlistData = await wishlistApi.getWishlist(user.token);
           // Transform API response to match frontend format
-          let items = [];
+          let items: WishlistItem[] = [];
           
           // Handle both mock database and MongoDB responses
           if (Array.isArray(wishlistData)) {
-            // Mock database response format
+            // Mock database response format - this is actually the product data directly
             items = wishlistData.map((product: any) => ({
-              id: product._id,
+              id: product._id || product.id,
               name: product.name,
               price: product.price,
               originalPrice: product.originalPrice,
