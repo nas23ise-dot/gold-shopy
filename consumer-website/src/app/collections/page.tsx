@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Filter, Search, SlidersHorizontal, Grid3X3, List, Star, Heart, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { addToCart, addToWishlist } from '@/lib/cartUtils';
+import { useCart } from '@/context/CartContext';
 import { productData } from '@/lib/productData';
 
 // Add static generation export
@@ -28,6 +29,7 @@ interface Product {
 
 // Remove searchParams from props since we can't use it in static generation
 const CollectionsPage = () => {
+  const { forceRefresh } = useCart();
   // Initialize with empty string instead of searchParams.collection
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -90,8 +92,8 @@ const CollectionsPage = () => {
     { value: 'rating', label: 'Highest Rated' }
   ];
 
-  const handleAddToCart = (product: Product) => {
-    addToCart({
+  const handleAddToCart = async (product: Product) => {
+    await addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
@@ -99,10 +101,11 @@ const CollectionsPage = () => {
       category: product.category,
       material: product.material
     });
+    await forceRefresh();
   };
 
-  const handleAddToWishlist = (product: Product) => {
-    addToWishlist({
+  const handleAddToWishlist = async (product: Product) => {
+    await addToWishlist({
       id: product.id,
       name: product.name,
       price: product.price,
@@ -112,6 +115,7 @@ const CollectionsPage = () => {
       material: product.material,
       rating: product.rating
     });
+    await forceRefresh();
   };
 
   return (

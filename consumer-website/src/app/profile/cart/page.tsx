@@ -19,16 +19,16 @@ interface CartItem {
 }
 
 const CartPage = () => {
-  const { cartItems, refreshCart } = useCart();
+  const { cartItems, refreshCart, forceRefresh } = useCart();
   
-  const handleUpdateQuantity = (id: number, newQuantity: number) => {
-    updateCartQuantity(id, newQuantity);
-    refreshCart(); // Refresh cart context after updating quantity
+  const handleUpdateQuantity = async (id: number, newQuantity: number) => {
+    await updateCartQuantity(id, newQuantity);
+    await forceRefresh(); // Use force refresh to ensure UI updates
   };
 
-  const handleRemoveFromCart = (id: number) => {
-    removeFromCart(id);
-    refreshCart(); // Refresh cart context after removing item
+  const handleRemoveFromCart = async (id: number) => {
+    await removeFromCart(id);
+    await forceRefresh(); // Use force refresh to ensure UI updates
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);

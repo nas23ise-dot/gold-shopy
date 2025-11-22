@@ -57,6 +57,7 @@ export const getCartItems = (): CartItem[] => {
   if (typeof window === 'undefined') return [];
   
   const storedCart = localStorage.getItem('cart');
+  console.log('Getting cart from localStorage:', storedCart); // Add logging
   if (storedCart) {
     try {
       return JSON.parse(storedCart);
@@ -69,10 +70,13 @@ export const getCartItems = (): CartItem[] => {
 
 export const getCartCount = (): number => {
   const cartItems = getCartItems();
-  return cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const count = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  console.log('Calculating cart count:', count); // Add logging
+  return count;
 };
 
 export const addToCart = async (item: Omit<CartItem, 'quantity'>): Promise<void> => {
+  console.log('Adding item to cart:', item); // Add logging
   if (typeof window === 'undefined') return;
   
   // Check if user is authenticated, if not redirect to login
@@ -87,6 +91,7 @@ export const addToCart = async (item: Omit<CartItem, 'quantity'>): Promise<void>
   if (token) {
     try {
       await cartApi.addToCart(token, item.id.toString(), 1);
+      console.log('Item added to cart via API'); // Add logging
       // Dispatch custom event to notify other components
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('cartUpdated'));
@@ -108,6 +113,7 @@ export const addToCart = async (item: Omit<CartItem, 'quantity'>): Promise<void>
   }
   
   localStorage.setItem('cart', JSON.stringify(cartItems));
+  console.log('Item added to cart in localStorage:', cartItems); // Add logging
   
   // Dispatch custom event to notify other components
   if (typeof window !== 'undefined') {

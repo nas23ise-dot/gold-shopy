@@ -35,6 +35,7 @@ interface CartContextType {
   refreshWishlist: () => void;
   syncLocalStorageToDatabase: () => Promise<void>;
   loading: boolean;
+  forceRefresh: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -54,6 +55,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       if (isAuthenticated && user?.token) {
         try {
           const cartData = await cartApi.getCart(user.token);
+          console.log('Cart data from API:', cartData); // Add logging
           // Transform API response to match frontend format
           let items = [];
           
@@ -93,8 +95,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             }));
           }
           
+          console.log('Transformed cart items:', items); // Add logging
           setCartItems(items);
-          setCartCount(items.reduce((sum: number, item: CartItem) => sum + item.quantity, 0));
+          const count = items.reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
+          setCartCount(count);
+          console.log('Cart count:', count); // Add logging
           return;
         } catch (error) {
           console.error('Failed to fetch cart from API, falling back to localStorage:', error);
@@ -104,6 +109,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       // Fallback to localStorage
       const items = getCartItems();
       const count = getCartCount();
+      console.log('Cart items from localStorage:', items); // Add logging
+      console.log('Cart count from localStorage:', count); // Add logging
       setCartItems(items);
       setCartCount(count);
     } finally {
@@ -271,6 +278,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [isAuthenticated, user]);
 
+  // Add a force refresh function
+  const forceRefresh = async () => {
+    await refreshCart();
+    await refreshWishlist();
+  };
+
   return (
     <CartContext.Provider value={{ 
       cartItems, 
@@ -280,7 +293,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       refreshCart,
       refreshWishlist,
       syncLocalStorageToDatabase,
-      loading
+      loading,
+      forceRefresh
     }}>
       {children}
     </CartContext.Provider>
