@@ -59,7 +59,18 @@ const CheckoutPage = () => {
     cardName: ''
   });
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const validCartItems = cartItems.filter(item => 
+    item && 
+    item.id && 
+    item.quantity > 0 && 
+    typeof item.price === 'number' && 
+    item.price > 0 &&
+    item.name && 
+    item.name !== 'undefined' &&
+    item.name.trim() !== ''
+  );
+
+  const subtotal = validCartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shipping = subtotal > 100000 ? 0 : 500;
   const tax = subtotal * 0.03;
   const total = subtotal + shipping + tax;
@@ -82,18 +93,46 @@ const CheckoutPage = () => {
       return;
     }
 
+    // Validate cart items before placing order
+    const validItems = cartItems.filter(item => 
+      item && 
+      item.id && 
+      item.quantity > 0 && 
+      typeof item.price === 'number' && 
+      item.price > 0 &&
+      item.name && 
+      item.name !== 'undefined' &&
+      item.name.trim() !== ''
+    );
+
+    if (validItems.length === 0) {
+      setError('Your cart contains no valid items. Please review your cart and try again.');
+      return;
+    }
+
+    // Check if there are invalid items and warn the user
+    if (validItems.length !== cartItems.length) {
+      const invalidItems = cartItems.filter(item => !validItems.includes(item));
+      setError(`Some items in your cart are invalid and will be removed: ${invalidItems.map(item => item.name).join(', ')}`);
+      // We'll still proceed with valid items only
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      // Prepare order data
+      // Prepare order data with only valid items
       const orderData = {
-        items: cartItems.map(item => ({
+        items: validItems.map(item => ({
           productId: item.id,
           quantity: item.quantity,
-          price: item.price
+          price: item.price,
+          name: item.name,
+          image: item.image
         })),
-        totalAmount: total,
+        totalAmount: validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 
+                     (validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0) > 100000 ? 0 : 500) + // shipping
+                     (validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0) * 0.03), // tax
         shippingAddress: {
           name: shippingInfo.fullName,
           address: shippingInfo.address,
@@ -113,12 +152,12 @@ const CheckoutPage = () => {
       if (typeof window !== 'undefined') {
         localStorage.setItem('lastOrder', JSON.stringify({
           ...response,
-          items: cartItems // Use cart items for display
+          items: validItems // Use valid items for display
         }));
       }
       
-      // Clear cart after successful order
-      cartItems.forEach(item => removeFromCart(item.id));
+      // Clear valid items from cart after successful order
+      validItems.forEach(item => removeFromCart(item.id));
       refreshCart(); // Refresh cart context after clearing cart
       
       // Show order confirmation
@@ -533,7 +572,16 @@ const CheckoutPage = () => {
                       <div className="p-4">
                         <h3 className="font-semibold text-gray-900 mb-4">Order Items</h3>
                         <div className="space-y-4">
-                          {cartItems.map((item) => (
+                          {cartItems.filter(item => 
+                            item && 
+                            item.id && 
+                            item.quantity > 0 && 
+                            typeof item.price === 'number' && 
+                            item.price > 0 &&
+                            item.name && 
+                            item.name !== 'undefined' &&
+                            item.name.trim() !== ''
+                          ).map((item) => (
                             <div key={item.id} className="flex items-center">
                               <div className="w-16 h-16 flex-shrink-0">
                                 <img

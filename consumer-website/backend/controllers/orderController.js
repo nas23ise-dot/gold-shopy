@@ -5,7 +5,16 @@ const Product = require('../models/Product');
 // Create order
 const createOrder = async (req, res) => {
   try {
+    console.log('Received order request:', req.body);
     const { items, totalAmount, shippingAddress, paymentMethod } = req.body;
+    
+    // Log user information for debugging
+    console.log('User from token:', req.user);
+    
+    if (!req.user || !req.user.id) {
+      console.error('No user ID found in request');
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
     
     if (req.useMockDb && req.mockDb) {
       // Use mock database
@@ -53,9 +62,24 @@ const createOrder = async (req, res) => {
       return res.status(201).json(order);
     }
     
-    // Validate items
-    if (!items || items.length === 0) {
+    // Validate and filter items
+    if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: 'Order must contain at least one item' });
+    }
+    
+    // Filter out any invalid items (where productId is missing or price is 0 or invalid)
+    const validItems = items.filter(item => 
+      item && 
+      item.productId && 
+      item.quantity > 0 && 
+      typeof item.price === 'number' && 
+      item.price > 0
+    );
+    
+    if (validItems.length === 0) {
+      return res.status(400).json({ 
+        message: 'No valid items in the order. Please check your cart and try again.' 
+      });
     }
     
     // Validate total amount
@@ -74,10 +98,12 @@ const createOrder = async (req, res) => {
     }
     
     // Create order items with price at time of purchase
-    const orderItems = items.map(item => ({
+    const orderItems = validItems.map(item => ({
       productId: item.productId,
+      name: item.name || `Product ${item.productId}`, // Include product name if available
       quantity: item.quantity,
-      price: item.price
+      price: item.price,
+      image: item.image || '' // Include image if available
     }));
     
     // Create order
