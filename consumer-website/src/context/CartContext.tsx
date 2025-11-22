@@ -33,6 +33,7 @@ interface CartContextType {
   wishlistCount: number;
   refreshCart: () => void;
   refreshWishlist: () => void;
+  syncLocalStorageToDatabase: () => Promise<void>;
   loading: boolean;
 }
 
@@ -54,15 +55,32 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         try {
           const cartData = await cartApi.getCart(user.token);
           // Transform API response to match frontend format
-          const items = cartData.items?.map((item: any) => ({
-            id: item.productId._id || item.productId,
-            name: item.productId.name,
-            price: item.productId.price,
-            image: item.productId.image,
-            category: item.productId.category,
-            material: item.productId.material,
-            quantity: item.quantity
-          })) || [];
+          let items = [];
+          
+          // Handle both mock database and MongoDB responses
+          if (Array.isArray(cartData)) {
+            // Mock database response format
+            items = cartData.map((item: any) => ({
+              id: item.productId._id || item.productId,
+              name: item.productId.name,
+              price: item.productId.price,
+              image: item.productId.image,
+              category: item.productId.category,
+              material: item.productId.material,
+              quantity: item.quantity
+            }));
+          } else if (cartData.items) {
+            // MongoDB response format
+            items = cartData.items.map((item: any) => ({
+              id: item.productId._id || item.productId,
+              name: item.productId.name,
+              price: item.productId.price,
+              image: item.productId.image,
+              category: item.productId.category,
+              material: item.productId.material,
+              quantity: item.quantity
+            }));
+          }
           
           setCartItems(items);
           setCartCount(items.reduce((sum: number, item: CartItem) => sum + item.quantity, 0));
@@ -90,16 +108,49 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         try {
           const wishlistData = await wishlistApi.getWishlist(user.token);
           // Transform API response to match frontend format
-          const items = wishlistData.productIds?.map((product: any) => ({
-            id: product._id,
-            name: product.name,
-            price: product.price,
-            originalPrice: product.originalPrice,
-            image: product.image,
-            category: product.category,
-            material: product.material,
-            rating: product.rating
-          })) || [];
+          let items = [];
+          
+          // Handle both mock database and MongoDB responses
+          if (Array.isArray(wishlistData)) {
+            // Mock database response format
+            items = wishlistData.map((product: any) => ({
+              id: product._id,
+              name: product.name,
+              price: product.price,
+              originalPrice: product.originalPrice,
+              image: product.image,
+              category: product.category,
+              material: product.material,
+              rating: product.rating
+            }));
+          } else if (wishlistData.productIds) {
+            // MongoDB response format
+            items = wishlistData.productIds.map((product: any) => ({
+              id: product._id,
+              name: product.name,
+              price: product.price,
+              originalPrice: product.originalPrice,
+              image: product.image,
+              category: product.category,
+              material: product.material,
+              rating: product.rating
+            }));
+          } else if (wishlistData.items) {
+            // Alternative format
+            items = wishlistData.items.map((item: any) => {
+              const product = item.productId || item.product;
+              return {
+                id: product._id,
+                name: product.name,
+                price: product.price,
+                originalPrice: product.originalPrice,
+                image: product.image,
+                category: product.category,
+                material: product.material,
+                rating: product.rating
+              };
+            });
+          }
           
           setWishlistItems(items);
           setWishlistCount(items.length);
@@ -118,6 +169,58 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     }
   };
+
+  // Function to sync localStorage data to database upon login
+  const syncLocalStorageToDatabase = async () => {
+    if (!isAuthenticated || !user?.token) return;
+
+    try {
+      // Get localStorage data
+      const localCartItems = getCartItems();
+      const localWishlistItems = getWishlistItems();
+
+      // Sync cart items
+      for (const item of localCartItems) {
+        try {
+          await cartApi.addToCart(user.token, item.id.toString(), item.quantity);
+        } catch (error) {
+          console.error(`Failed to sync cart item ${item.id} to database:`, error);
+        }
+      }
+
+      // Sync wishlist items
+      for (const item of localWishlistItems) {
+        try {
+          await wishlistApi.addToWishlist(user.token, item.id.toString());
+        } catch (error) {
+          console.error(`Failed to sync wishlist item ${item.id} to database:`, error);
+        }
+      }
+
+      // Clear localStorage after successful sync
+      localStorage.removeItem('cart');
+      localStorage.removeItem('wishlist');
+
+      // Refresh cart and wishlist from database
+      await refreshCart();
+      await refreshWishlist();
+    } catch (error) {
+      console.error('Failed to sync localStorage to database:', error);
+    }
+  };
+
+  // Listen for user login event
+  useEffect(() => {
+    const handleUserLogin = () => {
+      syncLocalStorageToDatabase();
+    };
+
+    window.addEventListener('userLoggedIn', handleUserLogin);
+
+    return () => {
+      window.removeEventListener('userLoggedIn', handleUserLogin);
+    };
+  }, [isAuthenticated, user]);
 
   // Custom event for cart updates within the same tab
   useEffect(() => {
@@ -165,6 +268,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       wishlistCount,
       refreshCart,
       refreshWishlist,
+      syncLocalStorageToDatabase,
       loading
     }}>
       {children}

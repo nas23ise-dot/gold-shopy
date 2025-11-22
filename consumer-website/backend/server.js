@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const session = require('express-session');
 const passport = require('passport');
 require('dotenv').config();
 
@@ -12,25 +13,50 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || (process.env.NODE_ENV === 'production' 
+    ? 'https://your-netlify-domain.netlify.app' 
+    : 'http://localhost:3000'),
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
+app.use(session({
+  secret: process.env.JWT_SECRET || 'goldshopsecret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
 app.use(passport.initialize());
+app.use(passport.session());
 
 // Connect to MongoDB or use mock database
-let useMockDb = false;
+let useMockDb = process.env.USE_MOCK_DB === 'true';
 let mockDb;
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/goldshop', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).catch(err => {
-  console.log('MongoDB connection failed, using mock database instead');
-  useMockDb = true;
+if (!useMockDb) {
+  mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/goldshop', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }).catch(err => {
+    console.log('MongoDB connection failed, using mock database instead');
+    useMockDb = true;
+    mockDb = require('./utils/mockDb');
+    // Seed mock database with sample data
+    mockDb.seedData();
+  });
+} else {
   mockDb = require('./utils/mockDb');
   // Seed mock database with sample data
   mockDb.seedData();
-});
+}
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));

@@ -10,7 +10,7 @@ const OrderConfirmationPage = () => {
   const orderData = {
     orderId: 'ORD-789456123',
     orderDate: new Date().toLocaleDateString(),
-    totalAmount: 125000,
+    totalAmount: 480000,
     items: [
       {
         id: 1,

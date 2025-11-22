@@ -47,14 +47,20 @@ const CollectionClient = ({ collectionName, productData }: CollectionClientProps
 
   // Filter products based on collection type
   const filteredProducts = useMemo(() => {
+    // Normalize collection name for case-insensitive matching
+    const normalizedCollectionName = collectionName.toLowerCase().trim();
+    
     let filtered = productData.filter(product => {
       // Apply collection-based filtering
-      switch (collectionName) {
+      switch (normalizedCollectionName) {
         case 'best-sellers':
-          return product.isBestseller;
+        case 'bestsellers':
+          return product.isBestseller === true;
         case 'new-arrivals':
-          return product.isNew;
+        case 'newarrivals':
+          return product.isNew === true;
         case 'bridal-collection':
+        case 'bridalcollection':
           return product.tags.includes('wedding') || product.tags.includes('bridal') || product.category === 'Rings';
         case 'traditional':
           return product.tags.includes('traditional') || product.tags.includes('classic');

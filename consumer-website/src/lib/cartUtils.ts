@@ -40,6 +40,18 @@ const getAuthToken = (): string | null => {
   return null;
 };
 
+// Check if user is authenticated
+const isAuthenticated = (): boolean => {
+  return !!getAuthToken();
+};
+
+// Redirect to login page
+const redirectToLogin = (): void => {
+  if (typeof window !== 'undefined') {
+    window.location.href = '/auth/signin';
+  }
+};
+
 // Cart functions
 export const getCartItems = (): CartItem[] => {
   if (typeof window === 'undefined') return [];
@@ -62,6 +74,12 @@ export const getCartCount = (): number => {
 
 export const addToCart = async (item: Omit<CartItem, 'quantity'>): Promise<void> => {
   if (typeof window === 'undefined') return;
+  
+  // Check if user is authenticated, if not redirect to login
+  if (!isAuthenticated()) {
+    redirectToLogin();
+    return;
+  }
   
   const token = getAuthToken();
   
@@ -188,6 +206,12 @@ export const getWishlistCount = (): number => {
 
 export const addToWishlist = async (item: WishlistItem): Promise<void> => {
   if (typeof window === 'undefined') return;
+  
+  // Check if user is authenticated, if not redirect to login
+  if (!isAuthenticated()) {
+    redirectToLogin();
+    return;
+  }
   
   const token = getAuthToken();
   

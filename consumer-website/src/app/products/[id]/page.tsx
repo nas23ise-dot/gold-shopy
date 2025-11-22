@@ -1,13 +1,9 @@
 import React from 'react';
 import ProductDetailsClient from './ProductDetailsClient';
+import { productData } from '@/lib/productData';
 
-// Generate static params for static export
 export async function generateStaticParams() {
-  // In a real application, this would fetch from a database or API
-  // For now, we'll generate a larger range of product IDs
-  return Array.from({ length: 20 }, (_, i) => ({
-    id: (i + 1).toString(),
-  }));
+  return productData.map((p) => ({ id: p.id.toString() }));
 }
 
 interface ProductDetailsProps {

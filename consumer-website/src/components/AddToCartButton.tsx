@@ -25,9 +25,14 @@ const AddToCartButton = ({
 }: AddToCartButtonProps) => {
   const { refreshCart } = useCart();
 
-  const handleClick = () => {
-    addToCart(product);
-    // refreshCart is now handled by the custom event in cartUtils
+  const handleClick = async () => {
+    try {
+      await addToCart(product);
+      // refreshCart is now handled by the custom event in cartUtils
+    } catch (error) {
+      // Error is handled in addToCart function
+      console.error('Error adding to cart:', error);
+    }
   };
 
   if (variant === 'icon') {

@@ -77,7 +77,7 @@ const ProfilePage = () => {
     { id: 'wishlist', label: 'Wishlist', icon: Heart, count: wishlistCount },
     { id: 'orders', label: 'My Orders', icon: Package },
     { id: 'cart', label: 'My Cart', icon: ShoppingBag, count: cartCount },
-    { id: 'payment', label: 'Payment Methods', icon: CreditCard },
+    { id: 'billing', label: 'Billing & Payments', icon: CreditCard },
     { id: 'settings', label: 'Settings', icon: Settings }
   ];
 
@@ -111,8 +111,10 @@ const ProfilePage = () => {
                       <Link
                         key={item.id}
                         href={item.id === 'wishlist' ? '/profile/wishlist' : 
-                             item.id === 'cart' ? '/profile/cart' : '#'}
-                        onClick={() => item.id !== 'wishlist' && item.id !== 'cart' && setActiveTab(item.id)}
+                             item.id === 'cart' ? '/profile/cart' : 
+                             item.id === 'billing' ? '/profile/billing' : 
+                             item.id === 'orders' ? '/profile/orders' : '#'}
+                        onClick={() => item.id !== 'wishlist' && item.id !== 'cart' && item.id !== 'billing' && item.id !== 'orders' && setActiveTab(item.id)}
                         className={`flex items-center w-full p-3 rounded-lg transition-colors ${
                           activeTab === item.id
                             ? 'bg-amber-50 text-amber-600 border border-amber-200'

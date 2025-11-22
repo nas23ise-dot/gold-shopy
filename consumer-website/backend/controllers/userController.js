@@ -4,15 +4,23 @@ const bcrypt = require('bcryptjs');
 const passport = require('passport');
 
 // Generate JWT token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'goldshopsecret', {
+const generateToken = (user) => {
+  return jwt.sign({ 
+    id: user._id, 
+    name: user.name,
+    email: user.email 
+  }, process.env.JWT_SECRET || 'goldshopsecret', {
     expiresIn: '30d'
   });
 };
 
 // Generate short-lived token for remember me
-const generateRememberMeToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'goldshopsecret', {
+const generateRememberMeToken = (user) => {
+  return jwt.sign({ 
+    id: user._id, 
+    name: user.name,
+    email: user.email 
+  }, process.env.JWT_SECRET || 'goldshopsecret', {
     expiresIn: '30d' // 30 days for remember me
   });
 };
@@ -74,11 +82,11 @@ const registerUser = async (req, res) => {
       });
       
       // Generate token
-      const token = generateToken(user._id);
+      const token = generateToken(user);
       
       // Set remember me cookie if requested
       if (req.body.rememberMe) {
-        const rememberTokenData = req.mockDb.generateRememberToken(user._id);
+        const rememberTokenData = generateRememberMeToken(user);
         setTokenCookie(res, token);
       }
       
@@ -114,12 +122,11 @@ const registerUser = async (req, res) => {
     
     if (user) {
       // Generate token
-      const token = generateToken(user._id);
+      const token = generateToken(user);
       
       // Set remember me cookie if requested
       if (req.body.rememberMe) {
-        const rememberTokenData = await user.generateRememberToken();
-        await user.save();
+        const rememberTokenData = generateRememberMeToken(user);
         setTokenCookie(res, token);
       }
       
@@ -168,11 +175,11 @@ const loginUser = async (req, res) => {
         req.mockDb.resetLoginAttempts(user._id);
         
         // Generate token
-        const token = generateToken(user._id);
+        const token = generateToken(user);
         
         // Set remember me cookie if requested
         if (rememberMe) {
-          const rememberTokenData = req.mockDb.generateRememberToken(user._id);
+          const rememberTokenData = generateRememberMeToken(user);
           setTokenCookie(res, token);
         }
         
@@ -208,12 +215,11 @@ const loginUser = async (req, res) => {
       await user.resetLoginAttempts();
       
       // Generate token
-      const token = generateToken(user._id);
+      const token = generateToken(user);
       
       // Set remember me cookie if requested
       if (rememberMe) {
-        const rememberTokenData = await user.generateRememberToken();
-        await user.save();
+        const rememberTokenData = generateRememberMeToken(user);
         setTokenCookie(res, token);
       }
       
@@ -252,46 +258,53 @@ const logoutUser = async (req, res) => {
 
 // Google OAuth authentication
 const googleAuth = (req, res, next) => {
+  console.log('Google OAuth authentication initiated');
   passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
 };
 
 // Google OAuth callback
 const googleAuthCallback = (req, res, next) => {
-  passport.authenticate('google', { failureRedirect: '/login' }, async (err, user, info) => {
+  console.log('Google OAuth callback called');
+  passport.authenticate('google', async (err, user, info) => {
+    console.log('Google OAuth authenticate callback called', { 
+      err: err ? err.message : null, 
+      hasUser: !!user, 
+      userId: user?._id,
+      info 
+    });
+    
     if (err) {
-      return res.status(500).json({ message: 'Authentication failed', error: err.message });
+      console.error('Google OAuth error:', err);
+      console.error('Error stack:', err.stack);
+      // Redirect to frontend with error
+      const frontendUrl = process.env.NODE_ENV === 'production' 
+        ? process.env.FRONTEND_URL || 'https://your-netlify-domain.netlify.app'
+        : process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/auth/google-callback?error=${encodeURIComponent(err.message || 'Unknown error')}`);
     }
     
     if (!user) {
-      return res.status(401).json({ message: 'Authentication failed' });
+      console.error('Google OAuth failed: No user returned');
+      console.error('Info object:', info);
+      // Redirect to frontend with error
+      const frontendUrl = process.env.NODE_ENV === 'production' 
+        ? process.env.FRONTEND_URL || 'https://your-netlify-domain.netlify.app'
+        : process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/auth/google-callback?error=Authentication failed - No user returned`);
     }
     
+    console.log('Google OAuth successful, user:', user);
     // Generate token
-    const token = generateToken(user._id);
+    const token = generateToken(user);
     
     // Set cookie
     setTokenCookie(res, token);
     
-    // For mock database, we need to handle the response differently
-    if (req.useMockDb && req.mockDb) {
-      return res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        isAdmin: user.isAdmin,
-        token
-      });
-    }
-    
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      isAdmin: user.isAdmin,
-      token
-    });
+    // Redirect to frontend with token
+    const frontendUrl = process.env.NODE_ENV === 'production' 
+      ? process.env.FRONTEND_URL || 'https://your-netlify-domain.netlify.app' // Update this to your actual Netlify domain
+      : process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/auth/google-callback?token=${token}`);
   })(req, res, next);
 };
 
@@ -315,7 +328,7 @@ const rememberMeLogin = async (req, res) => {
         }
         
         // Generate a new token
-        const newToken = generateToken(user._id);
+        const newToken = generateToken(user);
         
         return res.json({
           _id: user._id,
@@ -340,7 +353,7 @@ const rememberMeLogin = async (req, res) => {
       }
       
       // Generate a new token
-      const newToken = generateToken(user._id);
+      const newToken = generateToken(user);
       
       res.json({
         _id: user._id,
@@ -418,7 +431,7 @@ const updateUserProfile = async (req, res) => {
           email: updatedUser.email,
           phone: updatedUser.phone,
           isAdmin: updatedUser.isAdmin,
-          token: req.headers.authorization?.split(' ')[1] || generateToken(updatedUser._id)
+          token: req.headers.authorization?.split(' ')[1] || generateToken(updatedUser)
         });
       } else {
         return res.status(404).json({ message: 'User not found' });
@@ -441,7 +454,7 @@ const updateUserProfile = async (req, res) => {
         email: updatedUser.email,
         phone: updatedUser.phone,
         isAdmin: updatedUser.isAdmin,
-        token: req.headers.authorization?.split(' ')[1] || generateToken(updatedUser._id)
+        token: req.headers.authorization?.split(' ')[1] || generateToken(updatedUser)
       });
     } else {
       res.status(404).json({ message: 'User not found' });

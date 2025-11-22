@@ -28,7 +28,7 @@ const HeroCarousel = () => {
       subtitle: 'Where Tradition Meets Excellence',
       description: 'Handcrafted gold jewelry that tells your unique story. Each piece is BIS hallmarked and crafted with traditional Indian techniques.',
       ctaText: 'Explore Gold Collection',
-      ctaLink: '/collections/gold',
+      ctaLink: '/category/gold/gold-necklaces',
       bgGradient: 'from-amber-900/70 to-amber-600/70'
     },
     {
@@ -38,7 +38,7 @@ const HeroCarousel = () => {
       subtitle: 'Sparkle Like Never Before',
       description: 'Certified diamonds that capture light and hearts. Experience the brilliance of our premium diamond collection at Shiva Jewellers.',
       ctaText: 'Shop Diamonds',
-      ctaLink: '/collections/diamond',
+      ctaLink: '/category/diamond/diamond-rings',
       bgGradient: 'from-gray-900/70 to-gray-600/70'
     },
     {
@@ -48,7 +48,7 @@ const HeroCarousel = () => {
       subtitle: 'Affordable Luxury for Everyone',
       description: 'Pure silver jewelry combining traditional craftsmanship with modern designs. Perfect for everyday wear and special occasions.',
       ctaText: 'Discover Silver',
-      ctaLink: '/collections/silver',
+      ctaLink: '/category/silver/silver-necklaces',
       bgGradient: 'from-slate-900/70 to-slate-600/70'
     },
     {
@@ -131,14 +131,22 @@ const HeroCarousel = () => {
                   <div className="flex flex-col sm:flex-row gap-4">
                     <Link
                       href={slides[currentSlide].ctaLink}
-                      className="inline-flex items-center px-8 py-4 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = slides[currentSlide].ctaLink;
+                      }}
+                      className="inline-flex items-center px-8 py-4 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer z-10 relative"
                     >
                       {slides[currentSlide].ctaText}
                     </Link>
                     
                     <Link
                       href="/about"
-                      className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-gray-900 transition-all duration-300"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = '/about';
+                      }}
+                      className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-gray-900 transition-all duration-300 cursor-pointer z-10 relative"
                     >
                       Our Heritage
                     </Link>

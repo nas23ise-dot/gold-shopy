@@ -28,11 +28,16 @@ const AddToWishlistButton = ({
   const { refreshWishlist } = useCart();
   const [isWishlisted, setIsWishlisted] = useState(false);
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (!isWishlisted) {
-      addToWishlist(product);
-      setIsWishlisted(true);
-      // refreshWishlist is now handled by the custom event in cartUtils
+      try {
+        await addToWishlist(product);
+        setIsWishlisted(true);
+        // refreshWishlist is now handled by the custom event in cartUtils
+      } catch (error) {
+        // Error is handled in addToWishlist function
+        console.error('Error adding to wishlist:', error);
+      }
     } else {
       // In a real implementation, we would remove from wishlist
       setIsWishlisted(false);

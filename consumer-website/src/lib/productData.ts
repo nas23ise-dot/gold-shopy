@@ -1,9 +1,21 @@
-import React from 'react';
-import CategoryPageWrapper from '@/components/CategoryPageWrapper';
-import { productData } from '@/lib/productData';
+// Shared product data for use across the application
+export interface Product {
+  id: number;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  category: string;
+  material: string;
+  rating: number;
+  reviews: number;
+  discount?: number;
+  isNew?: boolean;
+  isBestseller?: boolean;
+  tags: string[];
+}
 
-// Fallback product data if API fails - exported for use in category page
-export const fallbackProductData = [
+export const productData: Product[] = [
   // Gold Category
   {
     id: 1,
@@ -123,7 +135,30 @@ export const fallbackProductData = [
     reviews: 103,
     tags: ["heart", "romantic"]
   },
-    
+  {
+    id: 45,
+    name: "Gold Mangalsutra Necklace",
+    price: 195000,
+    image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Mangalsutra",
+    category: "Necklaces",
+    material: "Gold",
+    rating: 4.8,
+    reviews: 145,
+    isBestseller: true,
+    tags: ["traditional", "wedding"]
+  },
+  {
+    id: 46,
+    name: "Gold Choker Necklace",
+    price: 175000,
+    image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Choker",
+    category: "Necklaces",
+    material: "Gold",
+    rating: 4.6,
+    reviews: 98,
+    tags: ["choker", "modern"]
+  },
+  
   // Diamond Category
   {
     id: 11,
@@ -239,7 +274,30 @@ export const fallbackProductData = [
     reviews: 74,
     tags: ["heart", "romantic"]
   },
-    
+  {
+    id: 47,
+    name: "Diamond Eternity Ring",
+    price: 825000,
+    image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Eternity+Ring",
+    category: "Rings",
+    material: "Diamond",
+    rating: 4.9,
+    reviews: 112,
+    isNew: true,
+    tags: ["eternity", "luxury"]
+  },
+  {
+    id: 48,
+    name: "Diamond Chandelier Earrings",
+    price: 485000,
+    image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Chandelier+Earrings",
+    category: "Earrings",
+    material: "Diamond",
+    rating: 4.7,
+    reviews: 67,
+    tags: ["chandelier", "statement"]
+  },
+  
   // Platinum Category
   {
     id: 21,
@@ -364,7 +422,30 @@ export const fallbackProductData = [
     reviews: 89,
     tags: ["cross", "spiritual"]
   },
-    
+  {
+    id: 49,
+    name: "Platinum Eternity Ring",
+    price: 445000,
+    image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Eternity+Ring",
+    category: "Rings",
+    material: "Platinum",
+    rating: 4.8,
+    reviews: 78,
+    isNew: true,
+    tags: ["eternity", "wedding"]
+  },
+  {
+    id: 50,
+    name: "Platinum Drop Earrings",
+    price: 225000,
+    image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Drop+Earrings",
+    category: "Earrings",
+    material: "Platinum",
+    rating: 4.6,
+    reviews: 56,
+    tags: ["drop", "elegant"]
+  },
+  
   // Silver Category
   {
     id: 29,
@@ -457,7 +538,64 @@ export const fallbackProductData = [
     reviews: 67,
     tags: ["cuff", "modern"]
   },
-    
+  {
+    id: 60,
+    name: "Silver Heart Pendant",
+    price: 15000,
+    image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Heart+Pendant",
+    category: "Pendants",
+    material: "Silver",
+    rating: 4.5,
+    reviews: 98,
+    tags: ["heart", "romantic"]
+  },
+  {
+    id: 61,
+    name: "Silver Cross Pendant",
+    price: 12000,
+    image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Cross+Pendant",
+    category: "Pendants",
+    material: "Silver",
+    rating: 4.4,
+    reviews: 87,
+    tags: ["cross", "spiritual"]
+  },
+  {
+    id: 62,
+    name: "Silver Om Pendant",
+    price: 18000,
+    image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Om+Pendant",
+    category: "Pendants",
+    material: "Silver",
+    rating: 4.6,
+    reviews: 134,
+    isBestseller: true,
+    tags: ["om", "spiritual", "traditional"]
+  },
+  {
+    id: 51,
+    name: "Silver Choker Necklace",
+    price: 28000,
+    image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Choker",
+    category: "Necklaces",
+    material: "Silver",
+    rating: 4.6,
+    reviews: 89,
+    isNew: true,
+    tags: ["choker", "trendy"]
+  },
+  {
+    id: 52,
+    name: "Silver Stud Earrings",
+    price: 10000,
+    image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Stud+Earrings",
+    category: "Earrings",
+    material: "Silver",
+    rating: 4.4,
+    reviews: 112,
+    tags: ["stud", "classic"]
+  },
+  
   // Coins & Bars Category
   {
     id: 37,
@@ -470,29 +608,6 @@ export const fallbackProductData = [
     reviews: 210,
     isBestseller: true,
     tags: ["investment", "pure"]
-  },
-  {
-    id: 55,
-    name: "1g Gold Coin",
-    price: 4500,
-    image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=1g+Gold+Coin",
-    category: "Coins",
-    material: "Gold",
-    rating: 4.7,
-    reviews: 145,
-    tags: ["investment", "small", "affordable"]
-  },
-  {
-    id: 56,
-    name: "2g Gold Coin",
-    price: 9000,
-    image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=2g+Gold+Coin",
-    category: "Coins",
-    material: "Gold",
-    rating: 4.8,
-    reviews: 167,
-    isNew: true,
-    tags: ["investment", "medium"]
   },
   {
     id: 38,
@@ -574,137 +689,29 @@ export const fallbackProductData = [
     reviews: 98,
     tags: ["affordable", "entry"]
   },
-  // Additional Gold products
   {
-    id: 45,
-    name: "Gold Mangalsutra Necklace",
-    price: 195000,
-    image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Mangalsutra",
-    category: "Necklaces",
+    id: 55,
+    name: "1g Gold Coin",
+    price: 4500,
+    image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=1g+Gold+Coin",
+    category: "Coins",
     material: "Gold",
-    rating: 4.8,
-    reviews: 145,
-    isBestseller: true,
-    tags: ["traditional", "wedding"]
-  },
-  {
-    id: 46,
-    name: "Gold Choker Necklace",
-    price: 175000,
-    image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Choker",
-    category: "Necklaces",
-    material: "Gold",
-    rating: 4.6,
-    reviews: 98,
-    tags: ["choker", "modern"]
-  },
-  // Additional Diamond products
-  {
-    id: 47,
-    name: "Diamond Eternity Ring",
-    price: 825000,
-    image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Eternity+Ring",
-    category: "Rings",
-    material: "Diamond",
-    rating: 4.9,
-    reviews: 112,
-    isNew: true,
-    tags: ["eternity", "luxury"]
-  },
-  {
-    id: 48,
-    name: "Diamond Chandelier Earrings",
-    price: 485000,
-    image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Chandelier+Earrings",
-    category: "Earrings",
-    material: "Diamond",
     rating: 4.7,
-    reviews: 67,
-    tags: ["chandelier", "statement"]
+    reviews: 145,
+    tags: ["investment", "small", "affordable"]
   },
-  // Additional Platinum products
   {
-    id: 49,
-    name: "Platinum Eternity Ring",
-    price: 445000,
-    image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Eternity+Ring",
-    category: "Rings",
-    material: "Platinum",
+    id: 56,
+    name: "2g Gold Coin",
+    price: 9000,
+    image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=2g+Gold+Coin",
+    category: "Coins",
+    material: "Gold",
     rating: 4.8,
-    reviews: 78,
+    reviews: 167,
     isNew: true,
-    tags: ["eternity", "wedding"]
+    tags: ["investment", "medium"]
   },
-  {
-    id: 50,
-    name: "Platinum Drop Earrings",
-    price: 225000,
-    image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Drop+Earrings",
-    category: "Earrings",
-    material: "Platinum",
-    rating: 4.6,
-    reviews: 56,
-    tags: ["drop", "elegant"]
-  },
-  // Additional Silver products
-  {
-    id: 51,
-    name: "Silver Choker Necklace",
-    price: 28000,
-    image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Choker",
-    category: "Necklaces",
-    material: "Silver",
-    rating: 4.6,
-    reviews: 89,
-    isNew: true,
-    tags: ["choker", "trendy"]
-  },
-  {
-    id: 52,
-    name: "Silver Stud Earrings",
-    price: 10000,
-    image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Stud+Earrings",
-    category: "Earrings",
-    material: "Silver",
-    rating: 4.4,
-    reviews: 112,
-    tags: ["stud", "classic"]
-  },
-  {
-    id: 60,
-    name: "Silver Heart Pendant",
-    price: 15000,
-    image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Heart+Pendant",
-    category: "Pendants",
-    material: "Silver",
-    rating: 4.5,
-    reviews: 98,
-    tags: ["heart", "romantic"]
-  },
-  {
-    id: 61,
-    name: "Silver Cross Pendant",
-    price: 12000,
-    image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Cross+Pendant",
-    category: "Pendants",
-    material: "Silver",
-    rating: 4.4,
-    reviews: 87,
-    tags: ["cross", "spiritual"]
-  },
-  {
-    id: 62,
-    name: "Silver Om Pendant",
-    price: 18000,
-    image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Om+Pendant",
-    category: "Pendants",
-    material: "Silver",
-    rating: 4.6,
-    reviews: 134,
-    isBestseller: true,
-    tags: ["om", "spiritual", "traditional"]
-  },
-  // Additional Coins & Bars
   {
     id: 53,
     name: "20g Gold Coin",
@@ -730,57 +737,3 @@ export const fallbackProductData = [
   }
 ];
 
-interface CategoryItemPageProps {
-  params: {
-    categoryName: string;
-    itemName: string;
-  };
-}
-
-// Generate static params for static export
-export async function generateStaticParams() {
-  const categories = [
-    // Gold Category
-    { categoryName: 'gold', itemName: 'gold-necklaces' },
-    { categoryName: 'gold', itemName: 'gold-earrings' },
-    { categoryName: 'gold', itemName: 'gold-bangles' },
-    { categoryName: 'gold', itemName: 'gold-rings' },
-    { categoryName: 'gold', itemName: 'gold-pendants' },
-    
-    // Diamond Category
-    { categoryName: 'diamond', itemName: 'diamond-necklaces' },
-    { categoryName: 'diamond', itemName: 'diamond-earrings' },
-    { categoryName: 'diamond', itemName: 'diamond-rings' },
-    { categoryName: 'diamond', itemName: 'diamond-bangles' },
-    { categoryName: 'diamond', itemName: 'diamond-pendants' },
-    
-    // Platinum Category
-    { categoryName: 'platinum', itemName: 'platinum-rings' },
-    { categoryName: 'platinum', itemName: 'platinum-earrings' },
-    { categoryName: 'platinum', itemName: 'platinum-necklaces' },
-    { categoryName: 'platinum', itemName: 'platinum-bangles' },
-    { categoryName: 'platinum', itemName: 'platinum-pendants' },
-    
-    // Silver Category
-    { categoryName: 'silver', itemName: 'silver-necklaces' },
-    { categoryName: 'silver', itemName: 'silver-earrings' },
-    { categoryName: 'silver', itemName: 'silver-rings' },
-    { categoryName: 'silver', itemName: 'silver-bangles' },
-    { categoryName: 'silver', itemName: 'silver-pendants' },
-    
-    // Coins & Bars Category
-    { categoryName: 'coins-and-bars', itemName: 'gold-coins' },
-    { categoryName: 'coins-and-bars', itemName: 'silver-coins' },
-    { categoryName: 'coins-and-bars', itemName: 'gold-bars' },
-    { categoryName: 'coins-and-bars', itemName: 'silver-bars' }
-  ];
-
-  return categories.map(({ categoryName, itemName }) => ({
-    categoryName,
-    itemName
-  }));
-}
-
-export default function CategoryItemPage({ params }: CategoryItemPageProps) {
-  return <CategoryPageWrapper params={params} fallbackProducts={productData} />;
-}

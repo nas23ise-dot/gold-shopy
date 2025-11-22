@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const mongoose = require('mongoose');
 
 const protect = async (req, res, next) => {
   let token;
@@ -22,7 +23,16 @@ const protect = async (req, res, next) => {
       }
       
       // Get user from token
-      req.user = await User.findById(decoded.id).select('-password');
+      // Handle both numeric IDs (from mock database) and ObjectId strings (from MongoDB)
+      let userId = decoded.id;
+      if (typeof userId === 'number' || (typeof userId === 'string' && !mongoose.Types.ObjectId.isValid(userId))) {
+        // If it's a numeric ID or an invalid ObjectId string, try to find by googleId or other means
+        // For now, we'll just return an error since we can't properly look up the user
+        res.status(401).json({ message: 'Not authorized, token failed - invalid user ID format' });
+        return;
+      }
+      
+      req.user = await User.findById(userId).select('-password');
       
       next();
     } catch (error) {

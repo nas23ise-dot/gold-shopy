@@ -3,12 +3,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Lock, Mail, User, Phone } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, User, Phone, Chrome } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 const SignUpPage = () => {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, register, loginWithGoogle } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -27,7 +27,7 @@ const SignUpPage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -39,24 +39,18 @@ const SignUpPage = () => {
       return;
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      // In a real application, you would send this data to your backend
-      // Login the user
-      login({ 
-        email: formData.email, 
-        name: formData.name,
-        phone: formData.phone
-      });
-      
+    try {
+      await register(formData.name, formData.email, formData.password, formData.phone);
       setSuccess(true);
-      setLoading(false);
-      
       // Redirect to profile after a short delay
       setTimeout(() => {
         router.push('/profile');
       }, 2000);
-    }, 1000);
+    } catch (err: any) {
+      setError(err.message || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -251,8 +245,11 @@ const SignUpPage = () => {
 
           <div className="mt-6 grid grid-cols-2 gap-3">
             <div>
-              <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-6 h-6" />
+              <button 
+                onClick={loginWithGoogle}
+                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+              >
+                <Chrome className="h-5 w-5 text-red-500" />
                 <span className="ml-2">Google</span>
               </button>
             </div>

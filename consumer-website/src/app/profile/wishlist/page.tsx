@@ -21,6 +21,32 @@ interface WishlistItem {
 
 const WishlistPage = () => {
   const { wishlistItems, refreshWishlist, refreshCart } = useCart();
+  
+  // Initialize with sample items if wishlist is empty
+  const sampleItems: any[] = [
+    {
+      id: 1,
+      name: 'Classic Gold Necklace',
+      price: 125000,
+      originalPrice: 145000,
+      image: 'https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Necklace',
+      category: 'Necklaces',
+      material: '22K Gold',
+      rating: 4.8
+    },
+    {
+      id: 2,
+      name: 'Diamond Stud Earrings',
+      price: 89000,
+      image: 'https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Earrings',
+      category: 'Earrings',
+      material: 'White Gold',
+      rating: 4.9
+    }
+  ];
+
+  // Use sample items if wishlist is empty
+  const displayItems = wishlistItems.length > 0 ? wishlistItems : sampleItems;
 
   const handleRemoveFromWishlist = (id: number) => {
     removeFromWishlist(id);
@@ -55,9 +81,9 @@ const WishlistPage = () => {
             <p className="text-lg text-gray-600">Items you've saved for later</p>
           </div>
 
-          {wishlistItems.length > 0 ? (
+          {displayItems.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {wishlistItems.map((item) => (
+              {displayItems.map((item) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}

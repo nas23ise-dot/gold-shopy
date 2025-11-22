@@ -3,12 +3,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, User, Chrome } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 const SignInPage = () => {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, loginUser, loginWithGoogle } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -22,26 +22,19 @@ const SignInPage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    // Simulate API call
-    setTimeout(() => {
-      // In a real application, you would validate credentials with your backend
-      if (formData.email === 'user@example.com' && formData.password === 'password') {
-        // Login the user
-        login({ 
-          email: formData.email, 
-          name: 'John Doe' 
-        });
-        router.push('/profile');
-      } else {
-        setError('Invalid email or password');
-      }
+    try {
+      await loginUser(formData.email, formData.password);
+      router.push('/profile');
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or password');
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -175,8 +168,11 @@ const SignInPage = () => {
 
           <div className="mt-6 grid grid-cols-2 gap-3">
             <div>
-              <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-6 h-6" />
+              <button 
+                onClick={loginWithGoogle}
+                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+              >
+                <Chrome className="h-5 w-5 text-red-500" />
                 <span className="ml-2">Google</span>
               </button>
             </div>

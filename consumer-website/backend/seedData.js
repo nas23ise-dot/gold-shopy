@@ -130,6 +130,27 @@ db.once('open', async () => {
         reviews: 103,
         tags: ["heart", "romantic"]
       },
+      {
+        name: "Gold Mangalsutra Necklace",
+        price: 195000,
+        image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Mangalsutra",
+        category: "Necklaces",
+        material: "Gold",
+        rating: 4.8,
+        reviews: 145,
+        isBestseller: true,
+        tags: ["traditional", "wedding"]
+      },
+      {
+        name: "Gold Choker Necklace",
+        price: 175000,
+        image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Choker",
+        category: "Necklaces",
+        material: "Gold",
+        rating: 4.6,
+        reviews: 98,
+        tags: ["choker", "modern"]
+      },
         
       // Diamond Category
       {
@@ -236,6 +257,27 @@ db.once('open', async () => {
         reviews: 74,
         tags: ["heart", "romantic"]
       },
+      {
+        name: "Diamond Eternity Ring",
+        price: 825000,
+        image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Eternity+Ring",
+        category: "Rings",
+        material: "Diamond",
+        rating: 4.9,
+        reviews: 112,
+        isNew: true,
+        tags: ["eternity", "luxury"]
+      },
+      {
+        name: "Diamond Chandelier Earrings",
+        price: 485000,
+        image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Chandelier+Earrings",
+        category: "Earrings",
+        material: "Diamond",
+        rating: 4.7,
+        reviews: 67,
+        tags: ["chandelier", "statement"]
+      },
         
       // Platinum Category
       {
@@ -318,6 +360,58 @@ db.once('open', async () => {
         rating: 4.7,
         reviews: 52,
         tags: ["tennis", "classic"]
+      },
+      {
+        name: "Platinum Eternity Ring",
+        price: 445000,
+        image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Eternity+Ring",
+        category: "Rings",
+        material: "Platinum",
+        rating: 4.8,
+        reviews: 78,
+        isNew: true,
+        tags: ["eternity", "wedding"]
+      },
+      {
+        name: "Platinum Drop Earrings",
+        price: 225000,
+        image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Drop+Earrings",
+        category: "Earrings",
+        material: "Platinum",
+        rating: 4.6,
+        reviews: 56,
+        tags: ["drop", "elegant"]
+      },
+      {
+        name: "Platinum Solitaire Pendant",
+        price: 285000,
+        image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Solitaire+Pendant",
+        category: "Pendants",
+        material: "Platinum",
+        rating: 4.6,
+        reviews: 78,
+        tags: ["solitaire", "elegant"]
+      },
+      {
+        name: "Platinum Heart Pendant",
+        price: 265000,
+        image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Heart+Pendant",
+        category: "Pendants",
+        material: "Platinum",
+        rating: 4.7,
+        reviews: 65,
+        isNew: true,
+        tags: ["heart", "romantic"]
+      },
+      {
+        name: "Platinum Cross Pendant",
+        price: 245000,
+        image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Cross+Pendant",
+        category: "Pendants",
+        material: "Platinum",
+        rating: 4.5,
+        reviews: 89,
+        tags: ["cross", "spiritual"]
       },
         
       // Silver Category
@@ -404,6 +498,58 @@ db.once('open', async () => {
         reviews: 67,
         tags: ["cuff", "modern"]
       },
+      {
+        name: "Silver Choker Necklace",
+        price: 28000,
+        image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Choker",
+        category: "Necklaces",
+        material: "Silver",
+        rating: 4.6,
+        reviews: 89,
+        isNew: true,
+        tags: ["choker", "trendy"]
+      },
+      {
+        name: "Silver Stud Earrings",
+        price: 10000,
+        image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Stud+Earrings",
+        category: "Earrings",
+        material: "Silver",
+        rating: 4.4,
+        reviews: 112,
+        tags: ["stud", "classic"]
+      },
+      {
+        name: "Silver Heart Pendant",
+        price: 15000,
+        image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Heart+Pendant",
+        category: "Pendants",
+        material: "Silver",
+        rating: 4.5,
+        reviews: 98,
+        tags: ["heart", "romantic"]
+      },
+      {
+        name: "Silver Cross Pendant",
+        price: 12000,
+        image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Cross+Pendant",
+        category: "Pendants",
+        material: "Silver",
+        rating: 4.4,
+        reviews: 87,
+        tags: ["cross", "spiritual"]
+      },
+      {
+        name: "Silver Om Pendant",
+        price: 18000,
+        image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Om+Pendant",
+        category: "Pendants",
+        material: "Silver",
+        rating: 4.6,
+        reviews: 134,
+        isBestseller: true,
+        tags: ["om", "spiritual", "traditional"]
+      },
         
       // Coins & Bars Category
       {
@@ -489,6 +635,48 @@ db.once('open', async () => {
         rating: 4.4,
         reviews: 98,
         tags: ["affordable", "entry"]
+      },
+      {
+        name: "20g Gold Coin",
+        price: 90000,
+        image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=20g+Gold+Coin",
+        category: "Coins",
+        material: "Gold",
+        rating: 4.9,
+        reviews: 187,
+        isBestseller: true,
+        tags: ["investment", "large"]
+      },
+      {
+        name: "1g Gold Coin",
+        price: 4500,
+        image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=1g+Gold+Coin",
+        category: "Coins",
+        material: "Gold",
+        rating: 4.7,
+        reviews: 145,
+        tags: ["investment", "small", "affordable"]
+      },
+      {
+        name: "2g Gold Coin",
+        price: 9000,
+        image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=2g+Gold+Coin",
+        category: "Coins",
+        material: "Gold",
+        rating: 4.8,
+        reviews: 167,
+        isNew: true,
+        tags: ["investment", "medium"]
+      },
+      {
+        name: "250g Silver Bar",
+        price: 21250,
+        image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=250g+Silver+Bar",
+        category: "Bars",
+        material: "Silver",
+        rating: 4.7,
+        reviews: 134,
+        tags: ["investment", "large"]
       }
     ];
 

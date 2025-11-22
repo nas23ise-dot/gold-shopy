@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Filter, Search, SlidersHorizontal, Grid3X3, List, Star, Heart, Eye, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
@@ -42,9 +42,23 @@ const CategoryPage = ({ params, products }: CategoryPageProps) => {
     sortBy: 'featured'
   });
 
-  // Decode the URL parameters
-  const categoryName = decodeURIComponent(params.categoryName);
-  const itemName = decodeURIComponent(params.itemName);
+  // Decode the URL parameters with better error handling
+  const categoryName = params?.categoryName ? String(params.categoryName) : '';
+  const itemName = params?.itemName ? String(params.itemName) : '';
+  
+  // Debug on mount
+  useEffect(() => {
+    console.log('🚀 CategoryPage:', {
+      categoryName,
+      itemName,
+      productsCount: products?.length || 0,
+      firstProduct: products?.[0] ? {
+        name: products[0].name,
+        category: products[0].category,
+        material: products[0].material
+      } : 'none'
+    });
+  }, [categoryName, itemName, products]);
   
   // Format the display names with better error handling
   const formatName = (name: string) => {
@@ -54,11 +68,40 @@ const CategoryPage = ({ params, products }: CategoryPageProps) => {
       .replace(/\b\w/g, char => char.toUpperCase());
   };
   
-  const formattedCategory = formatName(categoryName);
-  const formattedItem = formatName(itemName);
+  // Special handling for "coins-and-bars" category
+  const getCategoryDisplayName = (catName: string) => {
+    if (catName === 'coins-and-bars') {
+      return 'Coins & Bars';
+    }
+    return formatName(catName);
+  };
+  
+  // Special handling for item names in coins-and-bars
+  const getItemDisplayName = (catName: string, itmName: string) => {
+    if (catName === 'coins-and-bars') {
+      if (itmName.includes('gold-coin')) return 'Gold Coins';
+      if (itmName.includes('silver-coin')) return 'Silver Coins';
+      if (itmName.includes('gold-bar')) return 'Gold Bars';
+      if (itmName.includes('silver-bar')) return 'Silver Bars';
+    }
+    return formatName(itmName);
+  };
+  
+  const formattedCategory = getCategoryDisplayName(categoryName);
+  const formattedItem = getItemDisplayName(categoryName, itemName);
 
   // Filter products based on category and item type
   const filteredProducts = useMemo(() => {
+    if (!products || products.length === 0) {
+      console.warn('⚠️ No products available to filter');
+      return [];
+    }
+    
+    console.log('🔍 START FILTERING ===========================================');
+    console.log('Category Name:', categoryName);
+    console.log('Item Name:', itemName);
+    console.log('Total Products:', products.length);
+    
     let filtered = products.filter(product => {
       // First, let's determine what we're looking for based on the URL parameters
       // categoryName is like "gold", "diamond", etc.
@@ -69,18 +112,28 @@ const CategoryPage = ({ params, products }: CategoryPageProps) => {
       
       // Handle Coins & Bars category specially
       if (categoryName === 'coins-and-bars') {
-        // For coins and bars, we match based on the item name
-        if (itemName.includes('coin')) {
-          categoryMatch = product.category === 'Coins';
-        } else if (itemName.includes('bar')) {
-          categoryMatch = product.category === 'Bars';
+        // For coins and bars, we match based on the item name and material
+        let materialMatch = true;
+        if (itemName.includes('gold')) {
+          materialMatch = product.material.toLowerCase() === 'gold';
+        } else if (itemName.includes('silver')) {
+          materialMatch = product.material.toLowerCase() === 'silver';
         }
-        // No material matching needed for coins & bars
+        
+        if (itemName.includes('coin')) {
+          categoryMatch = product.category === 'Coins' && materialMatch;
+        } else if (itemName.includes('bar')) {
+          categoryMatch = product.category === 'Bars' && materialMatch;
+        }
       } else {
         // For regular categories, match the material
-        // Convert categoryName like "gold" to proper format
-        const materialName = formatName(categoryName);
-        categoryMatch = product.material.toLowerCase() === materialName.toLowerCase();
+        // Match material (case-insensitive) - use categoryName directly, not formatName
+        const productMaterial = product.material.toLowerCase().trim();
+        const targetMaterial = categoryName.toLowerCase().trim();
+        
+        // Direct match or contains match for gold category (handles "Gold" and "Rose Gold")
+        categoryMatch = productMaterial === targetMaterial || 
+                       (categoryName === 'gold' && productMaterial.includes('gold'));
       }
       
       // Match the item type (category in product data)
@@ -96,18 +149,43 @@ const CategoryPage = ({ params, products }: CategoryPageProps) => {
       } else {
         // For regular categories, extract from itemName
         // e.g., "gold-necklaces" -> "Necklaces"
-        const parts = itemName.split('-');
-        if (parts.length > 1) {
-          targetCategory = parts
-            .slice(1) // Remove the first part (material)
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ')
-            .replace(/s$/, ''); // Remove plural 's' for matching
-          
-          // Special case for some categories that should remain plural
-          if (targetCategory === 'Earring') targetCategory = 'Earrings';
-          if (targetCategory === 'Bangle') targetCategory = 'Bangles';
-          if (targetCategory === 'Pendant') targetCategory = 'Pendants';
+        const lowerItemName = itemName.toLowerCase();
+        
+        // First try to match by keywords (more reliable)
+        if (lowerItemName.includes('necklace')) {
+          targetCategory = 'Necklaces';
+        } else if (lowerItemName.includes('earring')) {
+          targetCategory = 'Earrings';
+        } else if (lowerItemName.includes('bangle')) {
+          targetCategory = 'Bangles';
+        } else if (lowerItemName.includes('ring')) {
+          targetCategory = 'Rings';
+        } else if (lowerItemName.includes('pendant')) {
+          targetCategory = 'Pendants';
+        } else {
+          // Fallback: parse from dashes
+          const parts = itemName.split('-');
+          if (parts.length > 1) {
+            // Remove the first part (material) and join the rest
+            const categoryParts = parts.slice(1);
+            targetCategory = categoryParts
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ');
+            
+            // Ensure categories are in plural form to match product data
+            const categoryMap: { [key: string]: string } = {
+              'Earring': 'Earrings',
+              'Bangle': 'Bangles',
+              'Pendant': 'Pendants',
+              'Necklace': 'Necklaces',
+              'Ring': 'Rings'
+            };
+            
+            // Check if we need to convert to plural
+            if (categoryMap[targetCategory]) {
+              targetCategory = categoryMap[targetCategory];
+            }
+          }
         }
       }
       
@@ -125,6 +203,25 @@ const CategoryPage = ({ params, products }: CategoryPageProps) => {
       return categoryMatch && itemMatch && searchMatch && categoryFilter && materialFilter && priceFilter && ratingFilter;
     });
 
+    // If no products match the exact category+item, show all products of that material as fallback
+    if (filtered.length === 0 && categoryName && itemName) {
+      console.log('⚠️ No exact matches found, showing all products of material:', categoryName);
+      filtered = products.filter(product => {
+        const productMaterial = product.material.toLowerCase().trim();
+        const targetMaterial = categoryName.toLowerCase().trim();
+        const materialMatch = productMaterial === targetMaterial || 
+                             (categoryName === 'gold' && productMaterial.includes('gold'));
+
+        const searchMatch = searchTerm ? product.name.toLowerCase().includes(searchTerm.toLowerCase()) : true;
+        const categoryFilter = filters.category.length > 0 ? filters.category.includes(product.category) : true;
+        const materialFilter = filters.material.length > 0 ? filters.material.includes(product.material) : true;
+        const priceFilter = product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1];
+        const ratingFilter = filters.rating > 0 ? product.rating >= filters.rating : true;
+
+        return materialMatch && searchMatch && categoryFilter && materialFilter && priceFilter && ratingFilter;
+      });
+    }
+    
     switch (filters.sortBy) {
       case 'price-low':
         filtered.sort((a, b) => a.price - b.price);
@@ -138,6 +235,12 @@ const CategoryPage = ({ params, products }: CategoryPageProps) => {
       default:
         filtered.sort((a, b) => (b.isBestseller ? 1 : 0) - (a.isBestseller ? 1 : 0));
     }
+    
+    console.log('✅ FILTERED RESULT:', {
+      filteredCount: filtered.length,
+      firstFew: filtered.slice(0, 3).map(p => p.name)
+    });
+    
     return filtered;
   }, [products, categoryName, itemName, searchTerm, filters]);
 
@@ -278,10 +381,10 @@ const CategoryPage = ({ params, products }: CategoryPageProps) => {
             className="text-center"
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              {formattedItem || 'Category'}
+              {formattedItem || formattedCategory || 'Category'}
             </h1>
             <p className="text-xl text-amber-100 max-w-2xl mx-auto">
-              Explore our exquisite collection of {formattedItem ? formattedItem.toLowerCase() : 'items'} in {formattedCategory ? formattedCategory.toLowerCase() : 'various categories'}.
+              Explore our exquisite collection of {formattedItem ? formattedItem.toLowerCase() : formattedCategory ? formattedCategory.toLowerCase() : 'items'} in {formattedCategory ? formattedCategory.toLowerCase() : 'various categories'}.
             </p>
           </motion.div>
         </div>
@@ -417,11 +520,22 @@ const CategoryPage = ({ params, products }: CategoryPageProps) => {
                   ))}
                 </AnimatePresence>
               </motion.div>
-            ) : (
+            ) : products.length > 0 ? (
               <div className="text-center py-16">
                 <Search size={64} className="mx-auto text-gray-400 mb-4" />
                 <h3 className="text-xl font-semibold text-gray-600 mb-2">No products found</h3>
-                <p className="text-gray-500">Try adjusting your filters or search terms</p>
+                <p className="text-gray-500 mb-4">Try adjusting your filters or search terms</p>
+                <p className="text-sm text-gray-400">
+                  Debug: Found {products.length} total products, but none matched the filter.
+                  <br />
+                  Category: {categoryName}, Item: {itemName}
+                </p>
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <Search size={64} className="mx-auto text-gray-400 mb-4" />
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">No products available</h3>
+                <p className="text-gray-500">Products are loading...</p>
               </div>
             )}
           </div>

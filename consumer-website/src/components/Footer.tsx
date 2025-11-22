@@ -21,37 +21,37 @@ import {
 const Footer = () => {
   const quickLinks = [
     { name: 'About Us', href: '/about' },
-    { name: 'Our Heritage', href: '/heritage' },
-    { name: 'Store Locator', href: '/stores' },
-    { name: 'Career', href: '/careers' },
-    { name: 'Press', href: '/press' },
-    { name: 'Investor Relations', href: '/investors' }
+    { name: 'Contact Us', href: '/contact' },
+    { name: 'Digital Gold', href: '/digital-gold' },
+    { name: 'Gold Scheme', href: '/gold-scheme' },
+    { name: 'Collections', href: '/collections' },
+    { name: 'Search', href: '/search' }
   ];
 
   const customerService = [
     { name: 'Contact Us', href: '/contact' },
-    { name: 'Size Guide', href: '/size-guide' },
-    { name: 'Shipping Info', href: '/shipping' },
-    { name: 'Returns & Exchange', href: '/returns' },
-    { name: 'Care Instructions', href: '/care' },
-    { name: 'FAQ', href: '/faq' }
+    { name: 'Shipping Info', href: '/contact#shipping' },
+    { name: 'Returns Policy', href: '/contact#returns' },
+    { name: 'Care Instructions', href: '/contact#care' },
+    { name: 'FAQ', href: '/contact#faq' },
+    { name: 'Size Guide', href: '/contact#size-guide' }
   ];
 
   const policies = [
-    { name: 'Privacy Policy', href: '/privacy' },
-    { name: 'Terms of Service', href: '/terms' },
-    { name: 'Buyback Policy', href: '/buyback' },
-    { name: 'Insurance Policy', href: '/insurance' },
-    { name: 'Refund Policy', href: '/refund' },
-    { name: 'Security', href: '/security' }
+    { name: 'Privacy Policy', href: '/contact#privacy' },
+    { name: 'Terms of Service', href: '/contact#terms' },
+    { name: 'Buyback Policy', href: '/contact#buyback' },
+    { name: 'Refund Policy', href: '/contact#refund' },
+    { name: 'Security', href: '/contact#security' },
+    { name: 'GST Info', href: '/contact#gst' }
   ];
 
   const collections = [
-    { name: 'Gold Jewelry', href: '/collections/gold' },
-    { name: 'Diamond Jewelry', href: '/collections/diamond' },
-    { name: 'Platinum Jewelry', href: '/collections/platinum' },
-    { name: 'Bridal Collection', href: '/collections/bridal' },
-    { name: 'Coins & Bars', href: '/collections/coins' },
+    { name: 'Best Sellers', href: '/collections/best-sellers' },
+    { name: 'New Arrivals', href: '/collections/new-arrivals' },
+    { name: 'Bridal Collection', href: '/collections/bridal-collection' },
+    { name: 'Traditional', href: '/collections/traditional' },
+    { name: 'Contemporary', href: '/collections/contemporary' },
     { name: 'Antique Collection', href: '/collections/antique' }
   ];
 
@@ -278,14 +278,14 @@ const Footer = () => {
             </div>
             
             <div className="flex flex-wrap items-center gap-6 text-sm text-gray-400">
-              <Link href="/privacy" className="hover:text-amber-400 transition-colors">
+              <Link href="/contact#privacy" className="hover:text-amber-400 transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="hover:text-amber-400 transition-colors">
+              <Link href="/contact#terms" className="hover:text-amber-400 transition-colors">
                 Terms of Service
               </Link>
-              <Link href="/sitemap" className="hover:text-amber-400 transition-colors">
-                Sitemap
+              <Link href="/collections" className="hover:text-amber-400 transition-colors">
+                Collections
               </Link>
             </div>
 

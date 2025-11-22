@@ -1,5 +1,5 @@
 [build]
-  base = "consumer-website"
+  base = "/"
   command = "npm run build"
   publish = ".next/static"
 

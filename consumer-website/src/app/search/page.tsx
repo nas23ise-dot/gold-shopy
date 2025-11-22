@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, SlidersHorizontal, Star, Heart, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { addToCart, addToWishlist } from '@/lib/cartUtils';
+import { productData } from '@/lib/productData';
 
 // Add static generation export
 export const dynamic = 'force-static';
@@ -27,7 +28,6 @@ interface Product {
 
 // Remove searchParams from props since we can't use it in static generation
 const SearchPage = () => {
-  // Initialize with empty string instead of searchParams.q
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -38,278 +38,8 @@ const SearchPage = () => {
     sortBy: 'featured'
   });
 
-  const products: Product[] = [
-    // Gold Category
-    {
-      id: 1,
-      name: "Classic Gold Chain Necklace",
-      price: 185000,
-      originalPrice: 220000,
-      image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Chain",
-      category: "Necklaces",
-      material: "Gold",
-      rating: 4.8,
-      reviews: 124,
-      discount: 16,
-      isBestseller: true,
-      tags: ["classic", "everyday", "gifting"]
-    },
-    {
-      id: 2,
-      name: "Elegant Gold Earrings",
-      price: 65000,
-      image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Earrings",
-      category: "Earrings",
-      material: "Gold",
-      rating: 4.6,
-      reviews: 89,
-      tags: ["elegant", "daily wear"]
-    },
-    {
-      id: 3,
-      name: "Traditional Gold Bangles",
-      price: 125000,
-      image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Bangles",
-      category: "Bangles",
-      material: "Gold",
-      rating: 4.7,
-      reviews: 156,
-      isNew: true,
-      tags: ["traditional", "festive"]
-    },
-    {
-      id: 4,
-      name: "Rose Gold Wedding Band",
-      price: 315000,
-      image: "https://via.placeholder.com/400x400/E11D48/FFFFFF?text=Rose+Gold+Ring",
-      category: "Rings",
-      material: "Rose Gold",
-      rating: 4.8,
-      reviews: 203,
-      isNew: true,
-      tags: ["wedding", "romantic", "trending"]
-    },
-    {
-      id: 5,
-      name: "Gold Pendant with Diamond",
-      price: 95000,
-      originalPrice: 110000,
-      image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Pendant",
-      category: "Pendants",
-      material: "Gold",
-      rating: 4.5,
-      reviews: 76,
-      discount: 14,
-      tags: ["delicate", "versatile"]
-    },
-    
-    // Diamond Category
-    {
-      id: 6,
-      name: "Diamond Solitaire Ring",
-      price: 675000,
-      image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Ring",
-      category: "Rings",
-      material: "Diamond",
-      rating: 4.9,
-      reviews: 87,
-      isBestseller: true,
-      tags: ["engagement", "luxury", "certified"]
-    },
-    {
-      id: 7,
-      name: "Diamond Tennis Necklace",
-      price: 550000,
-      image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Necklace",
-      category: "Necklaces",
-      material: "Diamond",
-      rating: 4.7,
-      reviews: 64,
-      tags: ["elegant", "evening wear"]
-    },
-    {
-      id: 8,
-      name: "Diamond Stud Earrings",
-      price: 295000,
-      originalPrice: 350000,
-      image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Earrings",
-      category: "Earrings",
-      material: "Diamond",
-      rating: 4.6,
-      reviews: 112,
-      discount: 16,
-      tags: ["classic", "timeless"]
-    },
-    {
-      id: 9,
-      name: "Diamond Bangle Set",
-      price: 780000,
-      image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Bangles",
-      category: "Bangles",
-      material: "Diamond",
-      rating: 4.8,
-      reviews: 43,
-      isNew: true,
-      tags: ["luxury", "statement"]
-    },
-    {
-      id: 10,
-      name: "Diamond Pendant Necklace",
-      price: 425000,
-      image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Pendant",
-      category: "Pendants",
-      material: "Diamond",
-      rating: 4.5,
-      reviews: 91,
-      tags: ["versatile", "special occasion"]
-    },
-    
-    // Platinum Category
-    {
-      id: 11,
-      name: "Platinum Engagement Ring",
-      price: 380000,
-      image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Ring",
-      category: "Rings",
-      material: "Platinum",
-      rating: 4.7,
-      reviews: 67,
-      tags: ["modern", "durable"]
-    },
-    {
-      id: 12,
-      name: "Platinum Hoop Earrings",
-      price: 195000,
-      image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Earrings",
-      category: "Earrings",
-      material: "Platinum",
-      rating: 4.6,
-      reviews: 54,
-      tags: ["contemporary", "everyday"]
-    },
-    {
-      id: 13,
-      name: "Platinum Chain Necklace",
-      price: 295000,
-      image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Necklace",
-      category: "Necklaces",
-      material: "Platinum",
-      rating: 4.5,
-      reviews: 78,
-      tags: ["minimalist", "versatile"]
-    },
-    {
-      id: 14,
-      name: "Platinum Cuff Bracelet",
-      price: 420000,
-      image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Bangle",
-      category: "Bangles",
-      material: "Platinum",
-      rating: 4.8,
-      reviews: 39,
-      isNew: true,
-      tags: ["statement", "modern"]
-    },
-    
-    // Silver Category
-    {
-      id: 15,
-      name: "Silver Statement Necklace",
-      price: 25000,
-      image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Necklace",
-      category: "Necklaces",
-      material: "Silver",
-      rating: 4.4,
-      reviews: 123,
-      tags: ["trendy", "affordable"]
-    },
-    {
-      id: 16,
-      name: "Silver Drop Earrings",
-      price: 12000,
-      originalPrice: 15000,
-      image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Earrings",
-      category: "Earrings",
-      material: "Silver",
-      rating: 4.3,
-      reviews: 87,
-      discount: 20,
-      tags: ["casual", "lightweight"]
-    },
-    {
-      id: 17,
-      name: "Silver Ring Set",
-      price: 18000,
-      image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Rings",
-      category: "Rings",
-      material: "Silver",
-      rating: 4.5,
-      reviews: 145,
-      isBestseller: true,
-      tags: ["set", "variety"]
-    },
-    {
-      id: 18,
-      name: "Silver Bangles Combo",
-      price: 22000,
-      image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Bangles",
-      category: "Bangles",
-      material: "Silver",
-      rating: 4.6,
-      reviews: 98,
-      tags: ["combo", "festive"]
-    },
-    
-    // Coins & Bars Category
-    {
-      id: 19,
-      name: "10g Gold Coin",
-      price: 45000,
-      image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Coin",
-      category: "Coins",
-      material: "Gold",
-      rating: 4.9,
-      reviews: 210,
-      isBestseller: true,
-      tags: ["investment", "pure"]
-    },
-    {
-      id: 20,
-      name: "100g Silver Bar",
-      price: 8500,
-      image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Bar",
-      category: "Bars",
-      material: "Silver",
-      rating: 4.7,
-      reviews: 156,
-      tags: ["investment", "bulk"]
-    },
-    {
-      id: 21,
-      name: "100g Gold Bar",
-      price: 450000,
-      image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Bar",
-      category: "Bars",
-      material: "Gold",
-      rating: 4.8,
-      reviews: 89,
-      isNew: true,
-      tags: ["investment", "high value"]
-    },
-    {
-      id: 22,
-      name: "5g Silver Coin",
-      price: 3500,
-      originalPrice: 4000,
-      image: "https://via.placeholder.com/400x400/C0C0C0/1F2937?text=Silver+Coin",
-      category: "Coins",
-      material: "Silver",
-      rating: 4.5,
-      reviews: 134,
-      discount: 13,
-      tags: ["affordable", "collectible"]
-    }
-  ];
+  // Use shared product data
+  const products: Product[] = productData;
 
   const filteredProducts = useMemo(() => {
     let filtered = products.filter(product => {
@@ -352,6 +82,14 @@ const SearchPage = () => {
     }
     return filtered;
   }, [searchTerm, filters, products]);
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get('q');
+      if (q) setSearchTerm(q);
+    } catch {}
+  }, []);
 
   const categories = ['Necklaces', 'Rings', 'Earrings', 'Bangles', 'Pendants', 'Coins', 'Bars'];
   const materials = ['Gold', 'Diamond', 'Platinum', 'Silver', 'Rose Gold', 'Pearl'];

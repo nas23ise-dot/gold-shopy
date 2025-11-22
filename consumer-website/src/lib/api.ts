@@ -1,6 +1,8 @@
 // API utility functions for connecting to the backend
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = typeof window !== 'undefined' 
+  ? (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000') + '/api'
+  : 'http://localhost:5000/api';
 
 // Helper function to make API requests
 const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
@@ -18,14 +20,43 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
     const response = await fetch(url, config);
     
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      // Try to parse error response as JSON
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch (jsonError) {
+        // If JSON parsing fails, try to get text response
+        try {
+          const errorText = await response.text();
+          errorMessage = errorText || errorMessage;
+        } catch (textError) {
+          // If all parsing fails, use the default error message
+        }
+      }
+      throw new Error(errorMessage);
+    }
+    
+    // Handle successful responses with no content
+    if (response.status === 204) {
+      return {};
     }
     
     return await response.json();
   } catch (error) {
+    // Log the error with the URL for debugging
     console.error(`API request failed for ${url}:`, error);
-    throw error;
+    
+    // Handle network errors or other exceptions
+    if (error instanceof Error) {
+      // For network errors, provide more context
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        throw new Error(`Network error: Unable to connect to ${url}. Please check your internet connection and server status.`);
+      }
+      throw new Error(`Request failed: ${error.message}`);
+    } else {
+      throw new Error('An unknown error occurred');
+    }
   }
 };
 
@@ -57,6 +88,12 @@ export const authApi = {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(userData),
+    }),
+  
+  rememberMeLogin: (token: string) =>
+    apiRequest('/users/remember-me', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
     }),
 };
 

@@ -17,7 +17,9 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: function() {
+      return !this.googleId; // Password not required if user has Google ID
+    },
     minlength: [8, 'Password must be at least 8 characters long']
   },
   phone: {
@@ -61,10 +63,29 @@ const userSchema = new mongoose.Schema({
 
 // Hash password before saving
 userSchema.pre('save', async function(next) {
+  // Skip password hashing for Google OAuth users if password is not set
+  if (this.googleId && !this.password) {
+    return next();
+  }
+  
   if (!this.isModified('password')) return next();
   
+  // Skip validation if this is a Google OAuth user
+  if (this.googleId) {
+    // For Google OAuth users, just hash the password if provided
+    if (this.password) {
+      try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+      } catch (error) {
+        return next(error);
+      }
+    }
+    return next();
+  }
+  
   try {
-    // Check password strength
+    // Check password strength only for non-Google users
     if (this.password.length < 8) {
       throw new Error('Password must be at least 8 characters long');
     }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -26,6 +26,24 @@ const Header = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+        // Only close if it's the profile dropdown
+        if (activeDropdown === 'profile') {
+          setActiveDropdown(null);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [activeDropdown]);
 
   // Close search modal when mobile menu opens
   useEffect(() => {
@@ -78,13 +96,15 @@ const Header = () => {
       'Platinum Rings',
       'Platinum Necklaces',
       'Platinum Earrings',
-      'Platinum Bangles'
+      'Platinum Bangles',
+      'Platinum Pendants'
     ],
     'Silver': [
       'Silver Necklaces',
       'Silver Earrings',
       'Silver Rings',
-      'Silver Bangles'
+      'Silver Bangles',
+      'Silver Pendants'
     ],
     'Coins & Bars': [
       'Gold Coins',
@@ -161,14 +181,19 @@ const Header = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="absolute top-full left-0 bg-white shadow-xl rounded-lg p-6 min-w-[200px] mt-2"
+                      onMouseEnter={() => setActiveDropdown('collections')}
+                      onMouseLeave={() => setActiveDropdown(null)}
+                      className="absolute top-full left-0 bg-white shadow-xl rounded-lg p-6 min-w-[200px] mt-2 z-50"
                     >
                       {collections.map((collection) => (
                         <Link
                           key={collection}
                           href={`/collections/${encodeURIComponent(collection.toLowerCase().replace(/\s+/g, '-'))}`}
                           className="block py-2 text-gray-700 hover:text-amber-600 transition-colors"
-                          onClick={() => setIsMenuOpen(false)}
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            setActiveDropdown(null);
+                          }}
                         >
                           {collection}
                         </Link>
@@ -179,17 +204,22 @@ const Header = () => {
               </div>
 
               {/* Category Dropdowns */}
-              {Object.entries(categories).map(([category, items]) => (
+              {Object.entries(categories).map(([category, items]) => {
+                const categorySlug = category.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, '-');
+                return (
                 <div
                   key={category}
                   className="relative group"
                   onMouseEnter={() => setActiveDropdown(`category-${category}`)}
                   onMouseLeave={() => setActiveDropdown(null)}
                 >
-                  <button className="flex items-center space-x-1 text-gray-700 hover:text-amber-600 transition-colors py-2">
+                  <Link 
+                    href={`/category/${categorySlug}`}
+                    className="flex items-center space-x-1 text-gray-700 hover:text-amber-600 transition-colors py-2"
+                  >
                     <span>{category}</span>
                     <ChevronDown size={16} className="group-hover:rotate-180 transition-transform" />
-                  </button>
+                  </Link>
                   
                   <AnimatePresence>
                     {activeDropdown === `category-${category}` && (
@@ -197,23 +227,33 @@ const Header = () => {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
-                        className="absolute top-full left-0 bg-white shadow-xl rounded-lg p-6 min-w-[220px] mt-2"
+                        onMouseEnter={() => setActiveDropdown(`category-${category}`)}
+                        onMouseLeave={() => setActiveDropdown(null)}
+                        className="absolute top-full left-0 bg-white shadow-xl rounded-lg p-6 min-w-[220px] mt-2 z-50"
                       >
-                        {items.map((item) => (
-                          <Link
-                            key={item}
-                            href={`/category/${encodeURIComponent(category.toLowerCase().replace(/&/g, 'and'))}/${encodeURIComponent(item.toLowerCase().replace(/\s+/g, '-'))}`}
-                            className="block py-2 text-gray-700 hover:text-amber-600 transition-colors"
-                            onClick={() => setIsMenuOpen(false)}
-                          >
-                            {item}
-                          </Link>
-                        ))}
+                        {items.map((item) => {
+                          const categorySlug = category.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, '-');
+                          const itemSlug = item.toLowerCase().replace(/\s+/g, '-');
+                          return (
+                            <Link
+                              key={item}
+                              href={`/category/${categorySlug}/${itemSlug}`}
+                              className="block py-2 text-gray-700 hover:text-amber-600 transition-colors"
+                              onClick={() => {
+                                setIsMenuOpen(false);
+                                setActiveDropdown(null);
+                              }}
+                            >
+                              {item}
+                            </Link>
+                          );
+                        })}
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </div>
-              ))}
+              );
+              })}
 
               {/* Other Menu Items */}
               <Link href="/digital-gold" className="text-gray-700 hover:text-amber-600 transition-colors">
@@ -269,33 +309,55 @@ const Header = () => {
               </Link>
               
               {/* User Profile Dropdown */}
-              <div className="relative">
+              <div className="relative" ref={profileDropdownRef}>
                 {user ? (
-                  <div className="group relative">
-                    <button className="p-2 hover:bg-gray-100 rounded-full transition-colors flex items-center">
+                  <div className="relative">
+                    <button 
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors flex items-center"
+                      aria-haspopup="true"
+                      aria-expanded={activeDropdown === 'profile'}
+                      onClick={() => setActiveDropdown(activeDropdown === 'profile' ? null : 'profile')}
+                    >
                       <User size={20} className="text-gray-600" />
+                      <span className="sr-only">User profile menu</span>
                     </button>
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 hidden group-hover:block z-50">
+                    <div 
+                      className={`absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 ${activeDropdown === 'profile' ? 'block' : 'hidden'} z-50`}
+                      role="menu"
+                      aria-label="User profile menu"
+                    >
                       <div className="px-4 py-2 border-b border-gray-100">
                         <p className="text-sm font-medium text-gray-900">Hi, {user.name}</p>
                       </div>
                       <Link 
                         href="/profile" 
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsMenuOpen(false)}
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          setActiveDropdown(null);
+                        }}
+                        role="menuitem"
                       >
                         My Profile
                       </Link>
                       <Link 
                         href="/profile/orders" 
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsMenuOpen(false)}
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          setActiveDropdown(null);
+                        }}
+                        role="menuitem"
                       >
                         My Orders
                       </Link>
                       <button
-                        onClick={handleLogout}
+                        onClick={() => {
+                          handleLogout();
+                          setActiveDropdown(null);
+                        }}
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                        role="menuitem"
                       >
                         <LogOut size={16} className="mr-2" />
                         Logout
@@ -303,8 +365,13 @@ const Header = () => {
                     </div>
                   </div>
                 ) : (
-                  <Link href="/auth/signin" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <Link 
+                    href="/auth/signin" 
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    aria-label="Sign in to your account"
+                  >
                     <User size={20} className="text-gray-600" />
+                    <span className="sr-only">Sign in</span>
                   </Link>
                 )}
               </div>
@@ -428,23 +495,35 @@ const Header = () => {
                   </div>
 
                   {/* Categories */}
-                  {Object.entries(categories).map(([category, items]) => (
-                    <div key={category}>
-                      <h3 className="font-semibold text-amber-600 mb-2">{category}</h3>
-                      <div className="space-y-2 ml-4">
-                        {items.map((item) => (
-                          <Link
-                            key={item}
-                            href={`/category/${encodeURIComponent(category.toLowerCase().replace(/&/g, 'and'))}/${encodeURIComponent(item.toLowerCase().replace(/\s+/g, '-'))}`}
-                            className="block text-gray-700 hover:text-amber-600"
-                            onClick={() => setIsMenuOpen(false)}
-                          >
-                            {item}
-                          </Link>
-                        ))}
+                  {Object.entries(categories).map(([category, items]) => {
+                    const categorySlug = category.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, '-');
+                    return (
+                      <div key={category}>
+                        <Link
+                          href={`/category/${categorySlug}`}
+                          className="font-semibold text-amber-600 mb-2 block hover:text-amber-700"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          {category}
+                        </Link>
+                        <div className="space-y-2 ml-4">
+                          {items.map((item) => {
+                            const itemSlug = item.toLowerCase().replace(/\s+/g, '-');
+                            return (
+                              <Link
+                                key={item}
+                                href={`/category/${categorySlug}/${itemSlug}`}
+                                className="block text-gray-700 hover:text-amber-600"
+                                onClick={() => setIsMenuOpen(false)}
+                              >
+                                {item}
+                              </Link>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   {/* Other Links */}
                   <div className="pt-4 border-t">

@@ -4,7 +4,7 @@ This is the backend API for the Gold Shop e-commerce website built with Node.js,
 
 ## Features
 
-- User authentication (register, login, profile management)
+- User authentication (register, login, Google OAuth, profile management)
 - Product management (CRUD operations)
 - Shopping cart functionality
 - Wishlist functionality
@@ -49,6 +49,12 @@ For MongoDB Atlas, use:
 MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/goldshop?retryWrites=true&w=majority
 ```
 
+For Google OAuth (optional):
+```env
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+```
+
 ### 3. Start the Server
 
 ```bash
@@ -59,7 +65,14 @@ npm run dev
 npm start
 ```
 
-### 4. Seed the Database
+### 4. Google OAuth Setup (Optional)
+
+To enable Google OAuth authentication:
+
+1. Follow the instructions in [GOOGLE_OAUTH_SETUP.md](../GOOGLE_OAUTH_SETUP.md)
+2. Add your Google OAuth credentials to the `.env` file
+
+### 5. Seed the Database
 
 To populate the database with sample data:
 
@@ -74,6 +87,8 @@ node seedData.js
 - `POST /api/users/login` - Login user
 - `GET /api/users/profile` - Get user profile (protected)
 - `PUT /api/users/profile` - Update user profile (protected)
+- `GET /api/users/auth/google` - Google OAuth authentication
+- `GET /api/users/auth/google/callback` - Google OAuth callback
 
 ### Products
 - `GET /api/products` - Get all products with filtering and pagination
@@ -195,6 +210,13 @@ backend/
 1. Verify JWT_SECRET is set in `.env`
 2. Check that tokens are being sent with requests in the Authorization header
 3. Ensure passwords are being hashed correctly
+
+### Google OAuth Issues
+
+1. Verify GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set correctly in `.env`
+2. Check that the redirect URIs in Google Cloud Console match `http://localhost:5000/api/users/auth/google/callback`
+3. Ensure the Google+ API is enabled in the Google Cloud Console
+4. If using "External" user type, make sure your email is added to "Test users"
 
 ## Contributing
 

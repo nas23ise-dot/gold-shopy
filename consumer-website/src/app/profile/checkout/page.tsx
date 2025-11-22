@@ -37,13 +37,13 @@ const CheckoutPage = () => {
 
   // Form data states
   const [shippingInfo, setShippingInfo] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
+    fullName: 'John Doe',
+    email: 'john.doe@example.com',
+    phone: '+91 98765 43210',
+    address: '123 Main Street',
+    city: 'Bangalore',
+    state: 'Karnataka',
+    zipCode: '560001',
     country: 'India'
   });
 
