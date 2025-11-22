@@ -206,6 +206,24 @@ class MockDB {
     return cart;
   }
 
+  updateCartItem(userId, productId, quantity) {
+    const cart = this.getCart(userId);
+    const itemIndex = cart.items.findIndex(item => item.productId === productId);
+    
+    if (itemIndex !== -1) {
+      if (quantity <= 0) {
+        // Remove item if quantity is 0 or less
+        cart.items.splice(itemIndex, 1);
+      } else {
+        // Update quantity
+        cart.items[itemIndex].quantity = quantity;
+      }
+      cart.updatedAt = new Date();
+    }
+    
+    return cart;
+  }
+
   clearCart(userId) {
     const cart = this.getCart(userId);
     cart.items = [];

@@ -21,31 +21,6 @@ interface CartItem {
 const CartPage = () => {
   const { cartItems, refreshCart } = useCart();
   
-  // Initialize with sample items if cart is empty
-  const sampleItems: any[] = [
-    {
-      id: 1,
-      name: 'Classic Gold Chain Necklace',
-      price: 185000,
-      image: 'https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Chain',
-      category: 'Necklaces',
-      material: '22K Gold',
-      quantity: 1
-    },
-    {
-      id: 2,
-      name: 'Diamond Stud Earrings',
-      price: 295000,
-      image: 'https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Earrings',
-      category: 'Earrings',
-      material: 'White Gold',
-      quantity: 1
-    }
-  ];
-
-  // Use sample items if cart is empty
-  const displayItems = cartItems.length > 0 ? cartItems : sampleItems;
-
   const handleUpdateQuantity = (id: number, newQuantity: number) => {
     updateCartQuantity(id, newQuantity);
     refreshCart(); // Refresh cart context after updating quantity
@@ -82,14 +57,14 @@ const CartPage = () => {
             <p className="text-lg text-gray-600">Review and manage your items before checkout</p>
           </div>
 
-          {displayItems.length > 0 ? (
+          {cartItems.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6">Cart Items ({displayItems.reduce((sum, item) => sum + item.quantity, 0)})</h2>
+                  <h2 className="text-xl font-bold text-gray-900 mb-6">Cart Items ({cartItems.reduce((sum, item) => sum + item.quantity, 0)})</h2>
                 
                   <div className="space-y-6">
-                    {displayItems.map((item) => (
+                    {cartItems.map((item) => (
                       <motion.div
                         key={item.id}
                         initial={{ opacity: 0, y: 20 }}

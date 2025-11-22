@@ -80,6 +80,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
               material: item.productId.material,
               quantity: item.quantity
             }));
+          } else if (cartData.cart && cartData.cart.items) {
+            // Alternative format with cart wrapper
+            items = cartData.cart.items.map((item: any) => ({
+              id: item.productId._id || item.productId,
+              name: item.productId.name,
+              price: item.productId.price,
+              image: item.productId.image,
+              category: item.productId.category,
+              material: item.productId.material,
+              quantity: item.quantity
+            }));
           }
           
           setCartItems(items);
