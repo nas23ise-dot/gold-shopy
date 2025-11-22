@@ -282,6 +282,10 @@ class MockDB {
     return this.data.orders.find(order => order._id === id);
   }
 
+  getUserOrders(userId) {
+    return this.data.orders.filter(order => order.userId === userId);
+  }
+
   // Seed database with sample data
   seedData() {
     // Clear existing data

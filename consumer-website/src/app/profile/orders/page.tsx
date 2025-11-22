@@ -49,21 +49,37 @@ const OrdersPage = () => {
     const fetchOrders = async () => {
       try {
         setLoading(true);
+        setError(null);
+        
+        // Debug: Log user and token
+        console.log('User data:', user);
+        console.log('Token:', user?.token);
+        
         // Use token from AuthContext instead of localStorage
         if (!user.token) {
+          console.error('No token available');
           router.push('/auth/signin');
           return;
         }
 
         const response = await orderApi.getUserOrders(user.token);
+        console.log('Orders API response:', response);
+        
         if (Array.isArray(response)) {
           setOrders(response);
         } else if (response.orders) {
           setOrders(response.orders);
+        } else {
+          setOrders([]);
         }
       } catch (err: any) {
         console.error('Error fetching orders:', err);
-        setError(err.message || 'Failed to load orders');
+        console.error('Error details:', {
+          message: err.message,
+          status: err.status,
+          response: err.response
+        });
+        setError(err.message || 'Failed to load orders. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -126,9 +142,12 @@ const OrdersPage = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
+          <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-4">
+            <p className="font-semibold">Error loading orders</p>
+            <p className="text-sm mt-2">{error}</p>
+          </div>
           <Link href="/profile" className="text-amber-600 hover:text-amber-700">
-            Back to Profile
+            ← Back to Profile
           </Link>
         </div>
       </div>

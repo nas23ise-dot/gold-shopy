@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Package, Calendar } from 'lucide-react';
 import { orderApi } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 
 interface OrderDetailsClientProps {
   params: {
@@ -29,6 +30,7 @@ interface Order {
 }
 
 export default function OrderDetailsClient({ params }: OrderDetailsClientProps) {
+  const { user } = useAuth();
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,12 +39,13 @@ export default function OrderDetailsClient({ params }: OrderDetailsClientProps) 
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-        if (!token) {
+        // Use token from AuthContext instead of localStorage
+        if (!user || !user.token) {
           router.push('/auth/signin');
           return;
         }
-        const data = await orderApi.getOrderById(token, params.id);
+        
+        const data = await orderApi.getOrderById(user.token, params.id);
         setOrder(data);
       } catch (err: any) {
         setError(err?.message || 'Failed to load order');
@@ -51,7 +54,7 @@ export default function OrderDetailsClient({ params }: OrderDetailsClientProps) 
       }
     };
     fetchOrder();
-  }, [params.id, router]);
+  }, [params.id, router, user]);
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
