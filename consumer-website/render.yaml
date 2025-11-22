@@ -10,7 +10,7 @@ services:
       - key: USE_MOCK_DB
         value: false
       - key: MONGODB_URI
-        value: YOUR_MONGODB_CONNECTION_STRING_HERE
+        value: mongodb+srv://Gold-shop:${MONGODB_PASSWORD}@cluster0.ela5ylc.mongodb.net/goldshop?retryWrites=true&w=majority
       - key: JWT_SECRET
         value: goldshopsecret
       - key: PORT
