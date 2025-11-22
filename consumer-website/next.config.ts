@@ -9,15 +9,10 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Configure for static export on Vercel
+  // Configure for static export with App Router
   distDir: 'out',
-  // Ensure proper handling of static export
-  exportPathMap: async function () {
-    return {
-      '/': { page: '/' },
-      // Add other static routes as needed
-    };
-  },
+  // Removed exportPathMap as it's incompatible with App Router
+  // Using generateStaticParams in app directory instead
 };
 
 export default nextConfig;
