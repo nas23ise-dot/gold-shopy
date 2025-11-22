@@ -9,10 +9,7 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Specify the correct root directory to resolve multiple lockfiles warning
-  turbopack: {
-    root: "C:\\Users\\huesh\\gold-shop\\consumer-website"
-  }
+  // Removed turbopack root configuration that was causing deployment issues
 };
 
 export default nextConfig;
