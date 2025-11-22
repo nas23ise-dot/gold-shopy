@@ -64,14 +64,13 @@ let mockDb;
 if (!useMockDb) {
   // Use MongoDB Atlas connection string with environment variable for password
   const mongoPassword = process.env.MONGODB_PASSWORD || 'mxapeoU76lMygfBQ'; // Fallback to your actual password
-  const mongoUri = process.env.MONGODB_URI || `mongodb+srv://Gold-shop:${mongoPassword}@cluster0.ela5ylc.mongodb.net/goldshop?retryWrites=true&w=majority`;
+  const mongoUri = process.env.MONGODB_URI || `mongodb+srv://Gold-shop:${mongoPassword}@cluster0.ela5ylc.mongodb.net/goldshop?retryWrites=true&w=majority&ssl=true`;
   
   mongoose.connect(mongoUri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    tls: true,
-    tlsAllowInvalidCertificates: true, // Only for testing - remove in production with proper certificates
-    tlsAllowInvalidHostnames: true    // Only for testing - remove in production with proper certificates
+    serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of default 30s
+    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
   }).catch(err => {
     console.log('MongoDB connection failed, using mock database instead');
     console.error('MongoDB connection error:', err);
