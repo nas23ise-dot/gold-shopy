@@ -57,35 +57,26 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Connect to MongoDB or use mock database
-console.log('Environment variables:');
-console.log('- USE_MOCK_DB:', process.env.USE_MOCK_DB);
-console.log('- MONGODB_URI:', process.env.MONGODB_URI);
-console.log('- NODE_ENV:', process.env.NODE_ENV);
-
-let useMockDb = process.env.USE_MOCK_DB === 'true';
-console.log('useMockDb value:', useMockDb);
-
+// Default to false to use MongoDB in production
+let useMockDb = process.env.USE_MOCK_DB === 'true' || process.env.NODE_ENV === 'development';
 let mockDb;
 
 if (!useMockDb) {
-  const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/goldshop';
-  console.log('Attempting to connect to MongoDB with URI:', mongoUri);
+  // Use MongoDB Atlas connection string with environment variable for password
+  const mongoPassword = process.env.MONGODB_PASSWORD || 'mxapeoU76lMygfBQ'; // Fallback to your actual password
+  const mongoUri = process.env.MONGODB_URI || `mongodb+srv://Gold-shop:${mongoPassword}@cluster0.ela5ylc.mongodb.net/goldshop?retryWrites=true&w=majority`;
   
   mongoose.connect(mongoUri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-  }).then(() => {
-    console.log('MongoDB connection successful');
   }).catch(err => {
     console.log('MongoDB connection failed, using mock database instead');
-    console.error('MongoDB connection error:', err);
     useMockDb = true;
     mockDb = require('./utils/mockDb');
     // Seed mock database with sample data
     mockDb.seedData();
   });
 } else {
-  console.log('Using mock database by configuration');
   mockDb = require('./utils/mockDb');
   // Seed mock database with sample data
   mockDb.seedData();
