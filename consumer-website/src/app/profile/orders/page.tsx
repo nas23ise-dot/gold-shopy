@@ -36,67 +36,7 @@ interface Order {
 const OrdersPage = () => {
   const { user } = useAuth();
   const router = useRouter();
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      _id: '1',
-      orderNumber: 'ORD-789456123',
-      items: [
-        {
-          productId: '1',
-          name: 'Classic Gold Chain Necklace',
-          price: 185000,
-          quantity: 1,
-          image: 'https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Chain'
-        },
-        {
-          productId: '2',
-          name: 'Diamond Stud Earrings',
-          price: 295000,
-          quantity: 1,
-          image: 'https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Earrings'
-        }
-      ],
-      totalAmount: 480000,
-      status: 'delivered',
-      shippingAddress: {
-        name: 'John Doe',
-        address: '123 Main Street',
-        city: 'Bangalore',
-        state: 'Karnataka',
-        zipCode: '560001',
-        phone: '+91 98765 43210'
-      },
-      paymentMethod: 'Credit Card',
-      createdAt: '2023-06-15T10:30:00Z',
-      updatedAt: '2023-06-18T14:20:00Z'
-    },
-    {
-      _id: '2',
-      orderNumber: 'ORD-456789123',
-      items: [
-        {
-          productId: '3',
-          name: 'Rose Gold Bracelet',
-          price: 89000,
-          quantity: 1,
-          image: 'https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Rose+Gold+Bracelet'
-        }
-      ],
-      totalAmount: 89000,
-      status: 'processing',
-      shippingAddress: {
-        name: 'John Doe',
-        address: '123 Main Street',
-        city: 'Bangalore',
-        state: 'Karnataka',
-        zipCode: '560001',
-        phone: '+91 98765 43210'
-      },
-      paymentMethod: 'PayPal',
-      createdAt: '2023-06-20T09:15:00Z',
-      updatedAt: '2023-06-20T09:15:00Z'
-    }
-  ]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -109,13 +49,13 @@ const OrdersPage = () => {
     const fetchOrders = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
-        if (!token) {
+        // Use token from AuthContext instead of localStorage
+        if (!user.token) {
           router.push('/auth/signin');
           return;
         }
 
-        const response = await orderApi.getUserOrders(token);
+        const response = await orderApi.getUserOrders(user.token);
         if (Array.isArray(response)) {
           setOrders(response);
         } else if (response.orders) {
@@ -326,4 +266,3 @@ const OrdersPage = () => {
 };
 
 export default OrdersPage;
-
