@@ -688,7 +688,7 @@ db.once('open', async () => {
     const adminUser = await User.create({
       name: 'Admin User',
       email: 'admin@goldshop.com',
-      password: 'admin123',
+      password: 'Admin123!',
       isAdmin: true
     });
     console.log('Admin user created:', adminUser.name);
@@ -697,7 +697,7 @@ db.once('open', async () => {
     const regularUser = await User.create({
       name: 'John Doe',
       email: 'john@goldshop.com',
-      password: 'john123',
+      password: 'John123!',
       phone: '+91 9876543210'
     });
     console.log('Regular user created:', regularUser.name);
