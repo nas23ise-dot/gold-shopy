@@ -60,11 +60,11 @@ app.use(passport.session());
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('USE_MOCK_DB:', process.env.USE_MOCK_DB);
 
-// Force MongoDB usage in production environment
+// Force MongoDB usage in production environment - make it very explicit
 const isProduction = process.env.NODE_ENV === 'production';
-let useMockDb = isProduction ? false : (process.env.USE_MOCK_DB === 'true');
+let useMockDb = false; // Force to false to always try MongoDB first
 console.log('isProduction:', isProduction);
-console.log('useMockDb calculated as:', useMockDb);
+console.log('useMockDb forced to:', useMockDb);
 
 let mockDb;
 
