@@ -122,6 +122,17 @@ app.use((req, res, next) => {
   next();
 });
 
+// Log environment variables for debugging
+console.log('Environment variables:');
+console.log('- NODE_ENV:', process.env.NODE_ENV);
+console.log('- GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET');
+console.log('- GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'NOT SET');
+console.log('- GOOGLE_CALLBACK_URL:', process.env.GOOGLE_CALLBACK_URL);
+console.log('- FRONTEND_URL:', process.env.FRONTEND_URL);
+console.log('- BACKEND_URL:', process.env.BACKEND_URL);
+console.log('- MONGODB_PASSWORD:', process.env.MONGODB_PASSWORD ? 'SET' : 'NOT SET');
+console.log('- JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'NOT SET');
+
 // Routes
 app.get('/', (req, res) => {
   res.json({ 
