@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   // Configure for static export with App Router
-  distDir: 'out',
+  // distDir: 'out', // This is not needed for static export
   // Specify the root directory to avoid workspace detection issues
   turbopack: {
     root: "."
