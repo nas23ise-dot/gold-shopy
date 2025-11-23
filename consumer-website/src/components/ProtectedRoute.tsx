@@ -5,14 +5,19 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, setRedirectUrl } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!isAuthenticated) {
+      // Store the current URL as redirect URL
+      if (typeof window !== 'undefined') {
+        const currentPath = window.location.pathname + window.location.search;
+        setRedirectUrl(currentPath);
+      }
       router.push('/auth/signin');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, setRedirectUrl]);
 
   if (!isAuthenticated) {
     return (

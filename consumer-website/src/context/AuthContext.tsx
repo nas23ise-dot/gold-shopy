@@ -19,6 +19,8 @@ interface AuthContextType {
   register: (name: string, email: string, password: string, phone?: string) => Promise<void>;
   loginUser: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => void;
+  setRedirectUrl: (url: string) => void;
+  getRedirectUrl: () => string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,6 +50,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('user');
+    localStorage.removeItem('redirectUrl');
+  };
+
+  // Set redirect URL
+  const setRedirectUrl = (url: string) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('redirectUrl', url);
+    }
+  };
+
+  // Get redirect URL
+  const getRedirectUrl = (): string | null => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('redirectUrl');
+    }
+    return null;
   };
 
   useEffect(() => {
@@ -136,6 +154,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const loginWithGoogle = () => {
+    // Store current URL as redirect URL before Google OAuth
+    if (typeof window !== 'undefined') {
+      const currentPath = window.location.pathname + window.location.search;
+      if (currentPath !== '/auth/signin' && currentPath !== '/auth/signup') {
+        setRedirectUrl(currentPath);
+      }
+    }
+    
     // Redirect to Google OAuth endpoint
     const backendUrl = typeof window !== 'undefined'
       ? (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000')
@@ -145,7 +171,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated, register, loginUser, loginWithGoogle }}>
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated, register, loginUser, loginWithGoogle, setRedirectUrl, getRedirectUrl }}>
       {children}
     </AuthContext.Provider>
   );

@@ -24,7 +24,7 @@ const decodeToken = (token: string) => {
 const GoogleCallbackContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { login, getRedirectUrl } = useAuth();
   const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
@@ -69,9 +69,16 @@ const GoogleCallbackContent = () => {
         // Show success message
         setShowSuccess(true);
         
-        // Redirect to home page after a short delay
+        // Redirect to intended destination or home page after a short delay
         setTimeout(() => {
-          window.location.href = '/';
+          const redirectUrl = getRedirectUrl();
+          localStorage.removeItem('redirectUrl'); // Clean up redirect URL
+          
+          if (redirectUrl && redirectUrl !== '/auth/signin' && redirectUrl !== '/auth/signup') {
+            window.location.href = redirectUrl;
+          } else {
+            window.location.href = '/';
+          }
         }, 3000);
       } catch (err) {
         console.error('Error processing Google OAuth callback:', err);
@@ -81,7 +88,7 @@ const GoogleCallbackContent = () => {
     };
     
     handleGoogleCallback();
-  }, [router, searchParams, login]);
+  }, [router, searchParams, login, getRedirectUrl]);
 
   if (showSuccess) {
     return (
@@ -93,14 +100,21 @@ const GoogleCallbackContent = () => {
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Created Successfully!</h2>
-          <p className="text-gray-600 mb-6">Welcome to Gold Shop. Redirecting to home page...</p>
+          <p className="text-gray-600 mb-6">Welcome to Gold Shop. Redirecting to your destination...</p>
           <button
             onClick={() => {
-              window.location.href = '/';
+              const redirectUrl = getRedirectUrl();
+              localStorage.removeItem('redirectUrl'); // Clean up redirect URL
+              
+              if (redirectUrl && redirectUrl !== '/auth/signin' && redirectUrl !== '/auth/signup') {
+                window.location.href = redirectUrl;
+              } else {
+                window.location.href = '/';
+              }
             }}
             className="px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors cursor-pointer"
           >
-            Continue to Home Page
+            Continue to Destination
           </button>
         </div>
       </div>
