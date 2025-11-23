@@ -1,7 +1,7 @@
 [build]
   base = "gold-shop-admin"
   command = "npm run build"
-  publish = ".next/static"
+  publish = "out"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
