@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Product = require('./models/Product');
 const User = require('./models/User');
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/goldshop', {

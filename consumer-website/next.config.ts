@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
   },
   // Configure for static export with App Router
   distDir: 'out',
+  // Specify the root directory to avoid workspace detection issues
+  turbopack: {
+    root: "."
+  },
   // Removed exportPathMap as it's incompatible with App Router
   // Using generateStaticParams in app directory instead
 };
