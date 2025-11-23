@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-const MongoStore = require('connect-mongo'); // Add this
+const MongoStore = require('connect-mongo');
 const passport = require('passport');
 require('dotenv').config();
 
@@ -45,6 +45,10 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
+// Connect to MongoDB or use mock database
+let useMockDb = false; // Force to false to always try MongoDB first
+let mockDb;
+
 // Session configuration with MongoStore for production
 const sessionConfig = {
   secret: process.env.JWT_SECRET || 'goldshopsecret',
@@ -70,11 +74,6 @@ if (process.env.NODE_ENV === 'production' && !useMockDb) {
 app.use(session(sessionConfig));
 app.use(passport.initialize());
 app.use(passport.session());
-
-// Connect to MongoDB or use mock database
-let useMockDb = false; // Force to false to always try MongoDB first
-
-let mockDb;
 
 if (!useMockDb) {
   // Use MongoDB Atlas connection string with environment variable for password
