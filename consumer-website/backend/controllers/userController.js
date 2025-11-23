@@ -278,9 +278,9 @@ const googleAuthCallback = (req, res, next) => {
       console.error('Error stack:', err.stack);
       // Redirect to frontend with error
       const frontendUrl = process.env.NODE_ENV === 'production' 
-        ? process.env.FRONTEND_URL || 'https://shiva-gold-diamond.netlify.app'
-        : process.env.FRONTEND_URL || 'http://localhost:3000';
-      return res.redirect(`${frontendUrl}/auth/google-callback?error=${encodeURIComponent(err.message || 'Unknown error')}`);
+        ? (process.env.FRONTEND_URL || 'https://shiva-gold-diamond.netlify.app')
+        : (process.env.FRONTEND_URL || 'http://localhost:3000');
+      return res.redirect(`${frontendUrl}/auth/signin?error=${encodeURIComponent(err.message || 'Unknown error')}`);
     }
     
     if (!user) {
@@ -288,9 +288,9 @@ const googleAuthCallback = (req, res, next) => {
       console.error('Info object:', info);
       // Redirect to frontend with error
       const frontendUrl = process.env.NODE_ENV === 'production' 
-        ? process.env.FRONTEND_URL || 'https://shiva-gold-diamond.netlify.app'
-        : process.env.FRONTEND_URL || 'http://localhost:3000';
-      return res.redirect(`${frontendUrl}/auth/google-callback?error=Authentication failed - No user returned`);
+        ? (process.env.FRONTEND_URL || 'https://shiva-gold-diamond.netlify.app')
+        : (process.env.FRONTEND_URL || 'http://localhost:3000');
+      return res.redirect(`${frontendUrl}/auth/signin?error=Authentication failed - No user returned`);
     }
     
     console.log('Google OAuth successful, user:', user);
@@ -302,8 +302,8 @@ const googleAuthCallback = (req, res, next) => {
     
     // Redirect to frontend with token
     const frontendUrl = process.env.NODE_ENV === 'production' 
-      ? process.env.FRONTEND_URL || 'https://shiva-gold-diamond.netlify.app'
-      : process.env.FRONTEND_URL || 'http://localhost:3000';
+      ? (process.env.FRONTEND_URL || 'https://shiva-gold-diamond.netlify.app')
+      : (process.env.FRONTEND_URL || 'http://localhost:3000');
     res.redirect(`${frontendUrl}/auth/google-callback?token=${token}`);
   })(req, res, next);
 };

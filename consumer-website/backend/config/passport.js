@@ -8,7 +8,7 @@ passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID || 'your-google-client-id',
   clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'your-google-client-secret',
   callbackURL: process.env.GOOGLE_CALLBACK_URL || (process.env.NODE_ENV === 'production' 
-    ? process.env.BACKEND_URL + '/api/users/auth/google/callback'
+    ? (process.env.BACKEND_URL ? process.env.BACKEND_URL + '/api/users/auth/google/callback' : 'https://gold-shopy.onrender.com/api/users/auth/google/callback')
     : 'http://localhost:5000/api/users/auth/google/callback')
 }, async (accessToken, refreshToken, profile, done) => {
   try {
