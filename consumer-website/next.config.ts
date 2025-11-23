@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: "."
   },
+  // Added for Netlify deployment
   // Removed exportPathMap as it's incompatible with App Router
   // Using generateStaticParams in app directory instead
 };

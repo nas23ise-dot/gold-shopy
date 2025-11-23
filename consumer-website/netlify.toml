@@ -5,3 +5,7 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NEXT_PUBLIC_API_URL = "https://gold-shopy.onrender.com/api"
+  NEXT_PUBLIC_BACKEND_URL = "https://gold-shopy.onrender.com"
