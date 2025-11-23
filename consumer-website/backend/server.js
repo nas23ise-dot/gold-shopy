@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
+const MongoStore = require('connect-mongo'); // Add this
 const passport = require('passport');
 require('dotenv').config();
 
@@ -16,6 +17,7 @@ const PORT = process.env.PORT || 5000;
 // CORS configuration
 const allowedOrigins = [
   'https://gold-jewelry-shopy.netlify.app',
+  'https://shiva-gold-diamond.netlify.app', // Add your new Netlify domain
   'http://localhost:3000',
   'http://localhost:3001'
 ];
@@ -42,7 +44,9 @@ app.options('*', cors(corsOptions));
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
-app.use(session({
+
+// Session configuration with MongoStore for production
+const sessionConfig = {
   secret: process.env.JWT_SECRET || 'goldshopsecret',
   resave: false,
   saveUninitialized: false,
@@ -52,7 +56,18 @@ app.use(session({
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
-}));
+};
+
+// Use MongoStore in production, MemoryStore in development
+if (process.env.NODE_ENV === 'production' && !useMockDb) {
+  sessionConfig.store = MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI || `mongodb+srv://Gold-shop:${process.env.MONGODB_PASSWORD}@cluster0.ela5ylc.mongodb.net/goldshop?retryWrites=true&w=majority&ssl=true`,
+    collectionName: 'sessions',
+    ttl: 24 * 60 * 60 // 24 hours
+  });
+}
+
+app.use(session(sessionConfig));
 app.use(passport.initialize());
 app.use(passport.session());
 
