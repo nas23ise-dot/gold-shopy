@@ -8,16 +8,18 @@ import { useAuth } from '@/context/AuthContext';
 import { orderApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 
+interface OrderItem {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
+
 interface Order {
   _id: string;
   orderNumber: string;
-  items: Array<{
-    productId: string;
-    name: string;
-    price: number;
-    quantity: number;
-    image: string;
-  }>;
+  items: OrderItem[];
   totalAmount: number;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   shippingAddress: {
@@ -65,13 +67,29 @@ const OrdersPage = () => {
         const response = await orderApi.getUserOrders(user.token);
         console.log('Orders API response:', response);
         
+        // Handle different response formats
+        let ordersData: Order[] = [];
         if (Array.isArray(response)) {
-          setOrders(response);
+          ordersData = response;
         } else if (response.orders) {
-          setOrders(response.orders);
+          ordersData = response.orders;
+        } else if (response.data && Array.isArray(response.data)) {
+          ordersData = response.data;
         } else {
-          setOrders([]);
+          ordersData = [];
         }
+        
+        // Ensure each order has required fields
+        const processedOrders = ordersData.map(order => ({
+          ...order,
+          orderNumber: order.orderNumber || order._id?.substring(0, 8) || 'N/A',
+          items: Array.isArray(order.items) ? order.items : [],
+          totalAmount: order.totalAmount || 0,
+          status: order.status || 'pending',
+          createdAt: order.createdAt || new Date().toISOString()
+        }));
+        
+        setOrders(processedOrders);
       } catch (err: any) {
         console.error('Error fetching orders:', err);
         console.error('Error details:', {
@@ -220,19 +238,25 @@ const OrdersPage = () => {
                 {/* Order Items */}
                 <div className="p-6">
                   <div className="space-y-4 mb-6">
-                    {order.items?.map((item, index) => (
+                    {(order.items || []).map((item, index) => (
                       <div key={index} className="flex items-center gap-4 pb-4 border-b border-gray-100 last:border-0">
                         <img
                           src={item.image || 'https://via.placeholder.com/100x100'}
                           alt={item.name}
                           className="w-20 h-20 object-cover rounded-lg"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = 'https://via.placeholder.com/100x100?text=Product+Image';
+                          }}
                         />
                         <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                          <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                          <h3 className="font-semibold text-gray-900">{item.name || 'Product Name'}</h3>
+                          <p className="text-sm text-gray-600">Quantity: {item.quantity || 1}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold text-gray-900">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
+                          <p className="font-semibold text-gray-900">
+                            ₹{((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -243,7 +267,7 @@ const OrdersPage = () => {
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-gray-600">Total Amount:</span>
                       <span className="text-xl font-bold text-amber-600">
-                        ₹{order.totalAmount?.toLocaleString('en-IN')}
+                        ₹{(order.totalAmount || 0).toLocaleString('en-IN')}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600 mt-2">

@@ -135,12 +135,22 @@ export const addToCart = async (item: Omit<CartItem, 'quantity'>): Promise<void>
 export const updateCartQuantity = async (id: number, quantity: number): Promise<void> => {
   if (typeof window === 'undefined') return;
   
+  // Check if user is authenticated
+  if (!isAuthenticated()) {
+    redirectToLogin();
+    return;
+  }
+  
   const token = getAuthToken();
   
   // If user is authenticated, use API
-  if (token && quantity > 0) {
+  if (token) {
     try {
-      await cartApi.updateCartItem(token, id.toString(), quantity);
+      if (quantity <= 0) {
+        await cartApi.removeFromCart(token, id.toString());
+      } else {
+        await cartApi.updateCartItem(token, id.toString(), quantity);
+      }
       // Dispatch custom event to notify other components
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('cartUpdated'));
@@ -151,18 +161,18 @@ export const updateCartQuantity = async (id: number, quantity: number): Promise<
     }
   }
   
-  // If quantity is 0 or API fails, remove item
-  if (quantity <= 0) {
-    await removeFromCart(id);
-    return;
-  }
-  
   // Fallback to localStorage
   const cartItems = getCartItems();
   const itemIndex = cartItems.findIndex(item => item.id === id);
   
   if (itemIndex >= 0) {
-    cartItems[itemIndex].quantity = quantity;
+    if (quantity <= 0) {
+      // Remove item if quantity is 0 or less
+      cartItems.splice(itemIndex, 1);
+    } else {
+      // Update quantity
+      cartItems[itemIndex].quantity = quantity;
+    }
     localStorage.setItem('cart', JSON.stringify(cartItems));
     
     // Dispatch custom event to notify other components
@@ -174,6 +184,12 @@ export const updateCartQuantity = async (id: number, quantity: number): Promise<
 
 export const removeFromCart = async (id: number): Promise<void> => {
   if (typeof window === 'undefined') return;
+  
+  // Check if user is authenticated
+  if (!isAuthenticated()) {
+    redirectToLogin();
+    return;
+  }
   
   const token = getAuthToken();
   
@@ -193,8 +209,8 @@ export const removeFromCart = async (id: number): Promise<void> => {
   
   // Fallback to localStorage
   const cartItems = getCartItems();
-  const updatedItems = cartItems.filter(item => item.id !== id);
-  localStorage.setItem('cart', JSON.stringify(updatedItems));
+  const filteredItems = cartItems.filter(item => item.id !== id);
+  localStorage.setItem('cart', JSON.stringify(filteredItems));
   
   // Dispatch custom event to notify other components
   if (typeof window !== 'undefined') {
@@ -264,6 +280,12 @@ export const addToWishlist = async (item: WishlistItem): Promise<void> => {
 export const removeFromWishlist = async (id: number): Promise<void> => {
   if (typeof window === 'undefined') return;
   
+  // Check if user is authenticated
+  if (!isAuthenticated()) {
+    redirectToLogin();
+    return;
+  }
+  
   const token = getAuthToken();
   
   // If user is authenticated, use API
@@ -282,8 +304,8 @@ export const removeFromWishlist = async (id: number): Promise<void> => {
   
   // Fallback to localStorage
   const wishlistItems = getWishlistItems();
-  const updatedItems = wishlistItems.filter(item => item.id !== id);
-  localStorage.setItem('wishlist', JSON.stringify(updatedItems));
+  const filteredItems = wishlistItems.filter(item => item.id !== id);
+  localStorage.setItem('wishlist', JSON.stringify(filteredItems));
   
   // Dispatch custom event to notify other components
   if (typeof window !== 'undefined') {
@@ -293,6 +315,12 @@ export const removeFromWishlist = async (id: number): Promise<void> => {
 
 export const moveFromWishlistToCart = async (id: number): Promise<void> => {
   if (typeof window === 'undefined') return;
+  
+  // Check if user is authenticated
+  if (!isAuthenticated()) {
+    redirectToLogin();
+    return;
+  }
   
   const token = getAuthToken();
   
@@ -339,42 +367,71 @@ export const runTests = () => {
   const mockLocalStorage = {
     getItem: (key: string) => mockStorage[key] || null,
     setItem: (key: string, value: string) => {
-      mockStorage[key] = value;
+      mockStorage[key] = value.toString();
     },
     removeItem: (key: string) => {
       delete mockStorage[key];
+    },
+    clear: () => {
+      Object.keys(mockStorage).forEach(key => delete mockStorage[key]);
     }
   };
   
-  // Temporarily replace localStorage
-  const originalLocalStorage = typeof window !== 'undefined' ? window.localStorage : undefined;
-  if (typeof window !== 'undefined') {
-    (window as any).localStorage = mockLocalStorage;
-  }
-  
-  console.log('Running tests...');
-  
-  // Clear storage
-  mockStorage.cart = '[]';
-  mockStorage.wishlist = '[]';
-  
-  // Test adding to cart
-  addToCart({
-    id: 1,
-    name: 'Test Product',
-    price: 100,
-    image: 'test.jpg',
-    category: 'Test',
-    material: 'Gold'
+  // Mock window.localStorage
+  Object.defineProperty(globalThis, 'localStorage', {
+    value: mockLocalStorage,
   });
   
-  const cartItems = getCartItems();
-  console.log('Cart items:', cartItems);
+  // Test data
+  const testProduct = {
+    id: 1,
+    name: 'Test Gold Necklace',
+    price: 150000,
+    image: 'https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Necklace',
+    category: 'Necklaces',
+    material: 'Gold'
+  };
   
-  // Restore original localStorage
-  if (typeof window !== 'undefined' && originalLocalStorage) {
-    (window as any).localStorage = originalLocalStorage;
-  }
+  const testWishlistProduct = {
+    id: 2,
+    name: 'Test Diamond Ring',
+    price: 250000,
+    originalPrice: 300000,
+    image: 'https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Ring',
+    category: 'Rings',
+    material: 'Diamond',
+    rating: 4.8
+  };
   
-  return cartItems.length === 1;
+  // Manual test function
+  const runTests = () => {
+    console.log('Running cart and wishlist tests...');
+    
+    // Test addToCart
+    addToCart(testProduct);
+    console.log('Cart items after adding:', getCartItems());
+    console.log('Cart count:', getCartCount());
+    
+    // Test updateCartQuantity
+    updateCartQuantity(1, 3);
+    console.log('Cart items after updating quantity:', getCartItems());
+    
+    // Test addToWishlist
+    addToWishlist(testWishlistProduct);
+    console.log('Wishlist items after adding:', getWishlistItems());
+    console.log('Wishlist count:', getWishlistCount());
+    
+    // Test moveFromWishlistToCart
+    moveFromWishlistToCart(2);
+    console.log('Cart items after moving from wishlist:', getCartItems());
+    console.log('Wishlist items after moving to cart:', getWishlistItems());
+    
+    // Test removeFromCart
+    removeFromCart(1);
+    console.log('Cart items after removing:', getCartItems());
+    
+    console.log('Tests completed!');
+  };
+  
+  return runTests;
 };

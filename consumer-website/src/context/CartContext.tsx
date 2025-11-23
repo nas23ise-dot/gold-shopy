@@ -1,9 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getCartItems, getCartCount, getWishlistItems, getWishlistCount } from '@/lib/cartUtils';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { cartApi, wishlistApi } from '@/lib/api';
+import { getCartItems, getWishlistItems, runTests } from '@/lib/cartUtils';
 
 interface CartItem {
   id: number;
@@ -29,206 +29,175 @@ interface WishlistItem {
 interface CartContextType {
   cartItems: CartItem[];
   wishlistItems: WishlistItem[];
-  cartCount: number;
-  wishlistCount: number;
-  refreshCart: () => void;
-  refreshWishlist: () => void;
-  syncLocalStorageToDatabase: () => Promise<void>;
-  loading: boolean;
+  refreshCart: () => Promise<void>;
+  refreshWishlist: () => Promise<void>;
   forceRefresh: () => Promise<void>;
+  getCartCount: () => number;
+  getWishlistCount: () => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const CartProvider = ({ children }: { children: ReactNode }) => {
+export const CartProvider = ({ children }: { children: React.ReactNode }) => {
+  const { user, isAuthenticated } = useAuth();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
-  const [cartCount, setCartCount] = useState(0);
-  const [wishlistCount, setWishlistCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const { user, isAuthenticated } = useAuth();
 
+  // Get cart count
+  const getCartCount = (): number => {
+    return cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  };
+
+  // Get wishlist count
+  const getWishlistCount = (): number => {
+    return wishlistItems.length;
+  };
+
+  // Refresh cart from API or localStorage
   const refreshCart = async () => {
+    if (loading) return;
+    
     setLoading(true);
     try {
-      console.log('Refreshing cart...'); // Add logging
-      // If user is authenticated, fetch cart from API
       if (isAuthenticated && user?.token) {
-        console.log('User is authenticated, fetching cart from API'); // Add logging
+        // User is authenticated, fetch from API
         try {
-          const cartData = await cartApi.getCart(user.token);
-          console.log('Cart data from API:', cartData); // Add logging
-          // Transform API response to match frontend format
-          let items: CartItem[] = [];
+          const response = await cartApi.getCart(user.token);
           
-          // Handle both mock database and MongoDB responses
+          // Handle different response formats
+          let cartData: any = response;
+          if (response.cart) {
+            cartData = response.cart;
+          } else if (response.data) {
+            cartData = response.data;
+          }
+          
+          // Process items to ensure correct format
+          let items: CartItem[] = [];
           if (Array.isArray(cartData)) {
-            // Mock database response format
-            console.log('Processing mock database response'); // Add logging
-            items = cartData.map((item: any) => {
-              // For mock database, productId is a number that references the product ID
-              const productId = item.productId;
-              console.log('Product ID from mock DB:', productId); // Add logging
+            items = cartData;
+          } else if (cartData.items && Array.isArray(cartData.items)) {
+            // Transform items from API format to our format
+            items = cartData.items.map((item: any) => {
+              // Handle different API response formats
+              const productId = item.productId?._id || item.productId?.id || item.productId;
+              const productName = item.productId?.name || item.name || 'Unknown Product';
+              const productPrice = item.productId?.price || item.price || 0;
+              const productImage = item.productId?.image || item.image || '';
+              const productCategory = item.productId?.category || item.category || 'Jewelry';
+              const productMaterial = item.productId?.material || item.material || 'Gold';
+              
               return {
-                id: productId,
-                name: `Product ${productId}`, // Placeholder, will be updated below
-                price: 0, // Placeholder, will be updated below
-                image: '', // Placeholder, will be updated below
-                category: '', // Placeholder, will be updated below
-                material: '', // Placeholder, will be updated below
-                quantity: item.quantity
+                id: typeof productId === 'string' ? parseInt(productId) : productId,
+                name: productName,
+                price: productPrice,
+                image: productImage,
+                category: productCategory,
+                material: productMaterial,
+                quantity: item.quantity || 1
               };
             });
-          } else if (cartData.items) {
-            // MongoDB response format
-            console.log('Processing MongoDB response'); // Add logging
-            items = cartData.items.map((item: any) => ({
-              id: item.productId._id || item.productId,
-              name: item.productId.name,
-              price: item.productId.price,
-              image: item.productId.image,
-              category: item.productId.category,
-              material: item.productId.material,
-              quantity: item.quantity
-            }));
-          } else if (cartData.cart && cartData.cart.items) {
-            // Alternative format with cart wrapper
-            console.log('Processing cart wrapper response'); // Add logging
-            items = cartData.cart.items.map((item: any) => ({
-              id: item.productId._id || item.productId,
-              name: item.productId.name,
-              price: item.productId.price,
-              image: item.productId.image,
-              category: item.productId.category,
-              material: item.productId.material,
-              quantity: item.quantity
-            }));
-          } else {
-            console.log('Unknown response format, using empty array'); // Add logging
-            items = [];
           }
           
-          // For mock database items, we need to fetch the actual product data
-          // This is a temporary solution - in a real app, the backend would populate this data
-          if (Array.isArray(cartData)) {
-            // Import product data to get actual product information
-            const { productData } = await import('@/lib/productData');
-            items = items.map((item: CartItem) => {
-              const product = productData.find(p => p.id === item.id);
-              if (product) {
-                return {
-                  ...item,
-                  name: product.name,
-                  price: product.price,
-                  image: product.image,
-                  category: product.category,
-                  material: product.material
-                };
-              }
-              return item;
-            });
-          }
-          
-          console.log('Transformed cart items:', items); // Add logging
           setCartItems(items);
-          const count = items.reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
-          setCartCount(count);
-          console.log('Cart count:', count); // Add logging
-          return;
-        } catch (error) {
-          console.error('Failed to fetch cart from API, falling back to localStorage:', error);
+        } catch (apiError) {
+          console.error('Failed to fetch cart from API, falling back to localStorage:', apiError);
+          // Fallback to localStorage
+          setCartItems(getCartItems());
         }
+      } else {
+        // User not authenticated, use localStorage
+        setCartItems(getCartItems());
       }
-      
-      console.log('User not authenticated or no token, using localStorage'); // Add logging
-      // Fallback to localStorage
-      const items = getCartItems();
-      const count = getCartCount();
-      console.log('Cart items from localStorage:', items); // Add logging
-      console.log('Cart count from localStorage:', count); // Add logging
-      setCartItems(items);
-      setCartCount(count);
+    } catch (error) {
+      console.error('Error refreshing cart:', error);
+      setCartItems([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Refresh wishlist from API or localStorage
   const refreshWishlist = async () => {
+    if (loading) return;
+    
     setLoading(true);
     try {
-      // If user is authenticated, fetch wishlist from API
       if (isAuthenticated && user?.token) {
+        // User is authenticated, fetch from API
         try {
-          const wishlistData = await wishlistApi.getWishlist(user.token);
-          // Transform API response to match frontend format
-          let items: WishlistItem[] = [];
+          const response = await wishlistApi.getWishlist(user.token);
           
-          // Handle both mock database and MongoDB responses
+          // Handle different response formats
+          let wishlistData: any = response;
+          if (response.wishlist) {
+            wishlistData = response.wishlist;
+          } else if (response.data) {
+            wishlistData = response.data;
+          }
+          
+          // Process items to ensure correct format
+          let items: WishlistItem[] = [];
           if (Array.isArray(wishlistData)) {
-            // Mock database response format - this is actually the product data directly
-            items = wishlistData.map((product: any) => ({
-              id: product._id || product.id,
-              name: product.name,
-              price: product.price,
-              originalPrice: product.originalPrice,
-              image: product.image,
-              category: product.category,
-              material: product.material,
-              rating: product.rating
-            }));
-          } else if (wishlistData.productIds) {
-            // MongoDB response format
-            items = wishlistData.productIds.map((product: any) => ({
-              id: product._id,
-              name: product.name,
-              price: product.price,
-              originalPrice: product.originalPrice,
-              image: product.image,
-              category: product.category,
-              material: product.material,
-              rating: product.rating
-            }));
-          } else if (wishlistData.items) {
-            // Alternative format
-            items = wishlistData.items.map((item: any) => {
-              const product = item.productId || item.product;
+            items = wishlistData;
+          } else if (wishlistData.productIds && Array.isArray(wishlistData.productIds)) {
+            // Transform items from API format to our format
+            items = wishlistData.productIds.map((product: any) => {
               return {
-                id: product._id,
-                name: product.name,
-                price: product.price,
+                id: typeof product._id === 'string' ? parseInt(product._id) : product._id,
+                name: product.name || 'Unknown Product',
+                price: product.price || 0,
                 originalPrice: product.originalPrice,
-                image: product.image,
-                category: product.category,
-                material: product.material,
-                rating: product.rating
+                image: product.image || '',
+                category: product.category || 'Jewelry',
+                material: product.material || 'Gold',
+                rating: product.rating || 0
+              };
+            });
+          } else if (Array.isArray(wishlistData.productIds)) {
+            // Handle case where productIds is an array of IDs
+            items = wishlistData.productIds.map((id: any) => {
+              return {
+                id: typeof id === 'string' ? parseInt(id) : id,
+                name: `Product ${id}`,
+                price: 0,
+                image: '',
+                category: 'Jewelry',
+                material: 'Gold',
+                rating: 0
               };
             });
           }
           
           setWishlistItems(items);
-          setWishlistCount(items.length);
-          return;
-        } catch (error) {
-          console.error('Failed to fetch wishlist from API, falling back to localStorage:', error);
+        } catch (apiError) {
+          console.error('Failed to fetch wishlist from API, falling back to localStorage:', apiError);
+          // Fallback to localStorage
+          setWishlistItems(getWishlistItems());
         }
+      } else {
+        // User not authenticated, use localStorage
+        setWishlistItems(getWishlistItems());
       }
-      
-      // Fallback to localStorage
-      const items = getWishlistItems();
-      const count = getWishlistCount();
-      setWishlistItems(items);
-      setWishlistCount(count);
+    } catch (error) {
+      console.error('Error refreshing wishlist:', error);
+      setWishlistItems([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Function to sync localStorage data to database upon login
+  // Force refresh both cart and wishlist
+  const forceRefresh = async () => {
+    await Promise.all([refreshCart(), refreshWishlist()]);
+  };
+
+  // Sync localStorage to database when user logs in
   const syncLocalStorageToDatabase = async () => {
     if (!isAuthenticated || !user?.token) return;
-
+    
     try {
-      // Get localStorage data
       const localCartItems = getCartItems();
       const localWishlistItems = getWishlistItems();
 
@@ -262,6 +231,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Initialize cart and wishlist
+  useEffect(() => {
+    refreshCart();
+    refreshWishlist();
+  }, []);
+
   // Listen for user login event
   useEffect(() => {
     const handleUserLogin = () => {
@@ -275,7 +250,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [isAuthenticated, user]);
 
-  // Custom event for cart updates within the same tab
+  // Listen for cart and wishlist update events
   useEffect(() => {
     const handleCartUpdate = () => {
       refreshCart();
@@ -294,42 +269,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  useEffect(() => {
-    refreshCart();
-    refreshWishlist();
-
-    // Listen for localStorage changes from other tabs
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'cart') {
-        refreshCart();
-      } else if (e.key === 'wishlist') {
-        refreshWishlist();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [isAuthenticated, user]);
-
-  // Add a force refresh function
-  const forceRefresh = async () => {
-    await refreshCart();
-    await refreshWishlist();
-  };
-
   return (
     <CartContext.Provider value={{ 
       cartItems, 
       wishlistItems, 
-      cartCount, 
-      wishlistCount,
-      refreshCart,
-      refreshWishlist,
-      syncLocalStorageToDatabase,
-      loading,
-      forceRefresh
+      refreshCart, 
+      refreshWishlist, 
+      forceRefresh,
+      getCartCount,
+      getWishlistCount
     }}>
       {children}
     </CartContext.Provider>

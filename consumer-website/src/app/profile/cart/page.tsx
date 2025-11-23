@@ -34,6 +34,11 @@ const CartPage = () => {
   );
   
   const handleUpdateQuantity = async (id: number, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      await handleRemoveFromCart(id);
+      return;
+    }
+    
     await updateCartQuantity(id, newQuantity);
     await forceRefresh(); // Use force refresh to ensure UI updates
   };
@@ -53,9 +58,9 @@ const CartPage = () => {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center mb-8">
-            <Link href="/profile" className="flex items-center text-gray-600 hover:text-amber-600 mr-4">
+            <Link href="/collections" className="flex items-center text-gray-600 hover:text-amber-600">
               <ArrowLeft size={20} className="mr-1" />
-              <span>Back to Profile</span>
+              <span>Continue Shopping</span>
             </Link>
           </div>
 
@@ -65,33 +70,55 @@ const CartPage = () => {
                 <ShoppingBag className="text-amber-600" size={32} />
               </div>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">My Shopping Cart</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Your Shopping Cart</h1>
             <p className="text-lg text-gray-600">Review and manage your items before checkout</p>
           </div>
 
-          {validCartItems.length > 0 ? (
+          {validCartItems.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-xl shadow-lg p-12 text-center"
+            >
+              <ShoppingBag size={64} className="mx-auto text-gray-400 mb-4" />
+              <h2 className="text-2xl font-semibold text-gray-800 mb-2">Your Cart is Empty</h2>
+              <p className="text-gray-600 mb-6">Looks like you haven't added any items to your cart yet.</p>
+              <Link
+                href="/collections"
+                className="inline-block bg-amber-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors"
+              >
+                Start Shopping
+              </Link>
+            </motion.div>
+          ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
-                <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6">Cart Items ({validCartItems.reduce((sum, item) => sum + item.quantity, 0)})</h2>
-                
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-6">
+                    Cart ({validCartItems.length} {validCartItems.length === 1 ? 'Item' : 'Items'})
+                  </h2>
+                  
                   <div className="space-y-6">
                     {validCartItems.map((item) => (
                       <motion.div
                         key={item.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center border-b border-gray-200 pb-6 last:border-0 last:pb-0"
+                        className="flex items-center gap-6 pb-6 border-b border-gray-200 last:border-0 last:pb-0"
                       >
                         <div className="w-24 h-24 flex-shrink-0">
                           <img
                             src={item.image}
                             alt={item.name}
                             className="w-full h-full object-cover rounded-lg"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = 'https://via.placeholder.com/150?text=Product+Image';
+                            }}
                           />
                         </div>
-                      
-                        <div className="ml-4 flex-grow">
+                        
+                        <div className="flex-grow">
                           <div className="flex justify-between">
                             <div>
                               <h3 className="font-semibold text-gray-900">{item.name}</h3>
@@ -104,13 +131,12 @@ const CartPage = () => {
                               <X size={20} />
                             </button>
                           </div>
-                        
+                          
                           <div className="flex items-center justify-between mt-4">
-                            <div className="flex items-center">
+                            <div className="flex items-center border border-gray-300 rounded-lg">
                               <button
                                 onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                                className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-l"
-                                disabled={item.quantity <= 1}
+                                className="w-8 h-8 flex items-center justify-center border-r border-gray-300"
                               >
                                 <Minus size={16} />
                               </button>
@@ -119,7 +145,7 @@ const CartPage = () => {
                               </span>
                               <button
                                 onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                                className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-r"
+                                className="w-8 h-8 flex items-center justify-center border-l border-gray-300"
                               >
                                 <Plus size={16} />
                               </button>
@@ -135,42 +161,14 @@ const CartPage = () => {
                   </div>
                 </div>
               
-                <div className="bg-white rounded-xl shadow-lg p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">Order Summary</h2>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Subtotal</span>
-                      <span className="font-medium">₹{subtotal.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Shipping</span>
-                      <span className="font-medium">{shipping === 0 ? 'FREE' : `₹${shipping.toLocaleString()}`}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Tax (3%)</span>
-                      <span className="font-medium">₹{tax.toLocaleString()}</span>
-                    </div>
-                    <div className="border-t border-gray-200 pt-3 flex justify-between text-lg font-bold">
-                      <span>Total</span>
-                      <span className="text-amber-600">₹{total.toLocaleString()}</span>
-                    </div>
-                  </div>
-                
-                  <div className="mt-6 flex flex-col sm:flex-row gap-4">
-                    <Link
-                      href="/collections"
-                      className="flex-1 text-center py-3 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      Continue Shopping
-                    </Link>
-                    <Link
-                      href="/profile/checkout"
-                      className="flex-1 flex items-center justify-center py-3 px-4 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
-                    >
-                      <CreditCard size={20} className="mr-2" />
-                      Proceed to Checkout
-                    </Link>
-                  </div>
+                <div className="mt-6">
+                  <Link
+                    href="/collections"
+                    className="inline-flex items-center text-gray-600 hover:text-amber-600"
+                  >
+                    <ArrowLeft size={20} className="mr-1" />
+                    Continue Shopping
+                  </Link>
                 </div>
               </div>
             
@@ -235,18 +233,6 @@ const CartPage = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <ShoppingBag size={64} className="mx-auto text-gray-300 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">Your cart is empty</h3>
-              <p className="text-gray-500 mb-6">Add items to your cart to continue shopping</p>
-              <Link 
-                href="/collections" 
-                className="inline-block bg-amber-600 text-white px-6 py-3 rounded-lg hover:bg-amber-700 transition-colors"
-              >
-                Browse Collections
-              </Link>
             </div>
           )}
         </div>

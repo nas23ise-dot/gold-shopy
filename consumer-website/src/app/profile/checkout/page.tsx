@@ -124,15 +124,13 @@ const CheckoutPage = () => {
       // Prepare order data with only valid items
       const orderData = {
         items: validItems.map(item => ({
-          productId: item.id,
+          productId: item.id.toString(), // Ensure productId is a string
           quantity: item.quantity,
           price: item.price,
           name: item.name,
           image: item.image
         })),
-        totalAmount: validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 
-                     (validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0) > 100000 ? 0 : 500) + // shipping
-                     (validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0) * 0.03), // tax
+        totalAmount: total, // Use the calculated total
         shippingAddress: {
           name: shippingInfo.fullName,
           address: shippingInfo.address,
@@ -145,8 +143,12 @@ const CheckoutPage = () => {
         paymentMethod: 'Credit Card'
       };
 
+      console.log('Placing order with data:', orderData); // Debug log
+
       // Create order through API
       const response = await orderApi.createOrder(user.token, orderData);
+      
+      console.log('Order creation response:', response); // Debug log
       
       // Store order data in localStorage for confirmation page
       if (typeof window !== 'undefined') {
@@ -157,8 +159,10 @@ const CheckoutPage = () => {
       }
       
       // Clear valid items from cart after successful order
-      validItems.forEach(item => removeFromCart(item.id));
-      refreshCart(); // Refresh cart context after clearing cart
+      for (const item of validItems) {
+        await removeFromCart(item.id);
+      }
+      await refreshCart(); // Refresh cart context after clearing cart
       
       // Show order confirmation
       setOrderPlaced(true);
