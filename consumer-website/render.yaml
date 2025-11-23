@@ -19,5 +19,11 @@ services:
         sync: false
       - key: GOOGLE_CLIENT_SECRET
         sync: false
+      - key: GOOGLE_CALLBACK_URL
+        value: https://gold-shopy.onrender.com/api/users/auth/google/callback
+      - key: FRONTEND_URL
+        value: https://shiva-gold-diamond.netlify.app
+      - key: BACKEND_URL
+        value: https://gold-shopy.onrender.com
       - key: PORT
         value: 10000
