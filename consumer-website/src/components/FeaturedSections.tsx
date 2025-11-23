@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight, Star, Heart, Eye } from 'lucide-react';
 import { addToCart, addToWishlist } from '@/lib/cartUtils';
 import { useRouter } from 'next/navigation';
+import { productApi } from '@/lib/api';
 
 interface Product {
   id: number;
@@ -262,93 +263,134 @@ const FeaturedSection = ({
 
 // Main Featured Sections Component
 const FeaturedSections = () => {
-  const bestSellers: Product[] = [
-    {
-      id: 1,
-      name: "Classic Gold Chain Necklace",
-      price: 185000,
-      originalPrice: 220000,
-      image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Chain",
-      category: "Gold Necklaces",
-      material: "Gold",
-      rating: 4.8,
-      isBestseller: true,
-      discount: 16
-    },
-    {
-      id: 2,
-      name: "Diamond Solitaire Ring",
-      price: 675000,
-      image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Ring",
-      category: "Diamond Rings",
-      material: "Diamond",
-      rating: 4.9,
-      isBestseller: true
-    },
-    {
-      id: 3,
-      name: "Traditional Gold Bangles",
-      price: 125000,
-      image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Bangles",
-      category: "Gold Bangles",
-      material: "Gold",
-      rating: 4.7,
-      isBestseller: true
-    },
-    {
-      id: 4,
-      name: "Gold Bangle Set",
-      price: 265000,
-      image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Bangle+Set",
-      category: "Gold Bangles",
-      material: "Gold",
-      rating: 4.6,
-      isBestseller: true
-    }
-  ];
+  const [bestSellers, setBestSellers] = useState<any[]>([]);
+  const [newArrivals, setNewArrivals] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const newArrivals: Product[] = [
-    {
-      id: 5,
-      name: "Elegant Gold Pendant Necklace",
-      price: 155000,
-      image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Pendant+Necklace",
-      category: "Gold Necklaces",
-      material: "Gold",
-      rating: 4.7,
-      isNew: true
-    },
-    {
-      id: 6,
-      name: "Rose Gold Wedding Band",
-      price: 315000,
-      image: "https://via.placeholder.com/400x400/E11D48/FFFFFF?text=Rose+Gold+Ring",
-      category: "Gold Rings",
-      material: "Rose Gold",
-      rating: 4.8,
-      isNew: true
-    },
-    {
-      id: 7,
-      name: "Diamond Bangle Set",
-      price: 780000,
-      image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Bangles",
-      category: "Diamond Bangles",
-      material: "Diamond",
-      rating: 4.8,
-      isNew: true
-    },
-    {
-      id: 8,
-      name: "Platinum Cuff Bracelet",
-      price: 420000,
-      image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Bangle",
-      category: "Platinum Bangles",
-      material: "Platinum",
-      rating: 4.8,
-      isNew: true
-    }
-  ];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        // Fetch products from API
+        const response = await productApi.getAllProducts();
+        const products = response.products || [];
+        
+        // Filter best sellers and new arrivals
+        const bestSellersData = products
+          .filter((product: any) => product.isBestseller)
+          .slice(0, 4);
+          
+        const newArrivalsData = products
+          .filter((product: any) => product.isNew)
+          .slice(0, 4);
+        
+        setBestSellers(bestSellersData);
+        setNewArrivals(newArrivalsData);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        // Fallback to hardcoded data if API fails
+        setBestSellers([
+          {
+            id: 1,
+            name: "Classic Gold Chain Necklace",
+            price: 185000,
+            originalPrice: 220000,
+            image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Chain",
+            category: "Gold Necklaces",
+            material: "Gold",
+            rating: 4.8,
+            isBestseller: true,
+            discount: 16
+          },
+          {
+            id: 2,
+            name: "Diamond Solitaire Ring",
+            price: 675000,
+            image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Ring",
+            category: "Diamond Rings",
+            material: "Diamond",
+            rating: 4.9,
+            isBestseller: true
+          },
+          {
+            id: 3,
+            name: "Traditional Gold Bangles",
+            price: 125000,
+            image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Bangles",
+            category: "Gold Bangles",
+            material: "Gold",
+            rating: 4.7,
+            isBestseller: true
+          },
+          {
+            id: 4,
+            name: "Gold Bangle Set",
+            price: 265000,
+            image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Bangle+Set",
+            category: "Gold Bangles",
+            material: "Gold",
+            rating: 4.6,
+            isBestseller: true
+          }
+        ]);
+        
+        setNewArrivals([
+          {
+            id: 5,
+            name: "Elegant Gold Pendant Necklace",
+            price: 155000,
+            image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Pendant+Necklace",
+            category: "Gold Necklaces",
+            material: "Gold",
+            rating: 4.7,
+            isNew: true
+          },
+          {
+            id: 6,
+            name: "Rose Gold Wedding Band",
+            price: 315000,
+            image: "https://via.placeholder.com/400x400/E11D48/FFFFFF?text=Rose+Gold+Ring",
+            category: "Gold Rings",
+            material: "Rose Gold",
+            rating: 4.8,
+            isNew: true
+          },
+          {
+            id: 7,
+            name: "Diamond Bangle Set",
+            price: 780000,
+            image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Bangles",
+            category: "Diamond Bangles",
+            material: "Diamond",
+            rating: 4.8,
+            isNew: true
+          },
+          {
+            id: 8,
+            name: "Platinum Cuff Bracelet",
+            price: 420000,
+            image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Bangle",
+            category: "Platinum Bangles",
+            material: "Platinum",
+            rating: 4.8,
+            isNew: true
+          }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="py-16 text-center">
+        <div className="text-lg text-gray-600">Loading products...</div>
+      </div>
+    );
+  }
 
   return (
     <>
