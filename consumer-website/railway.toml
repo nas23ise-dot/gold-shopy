@@ -3,3 +3,6 @@ builder = "NIXPACKS"
 
 [deploy]
 startCommand = "npx serve out"
+
+[env]
+RAILPACK_SPA_OUTPUT_DIR = "out"
