@@ -2,13 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Lock, Mail, User, Chrome } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 const SignInForm = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { login, loginUser, loginWithGoogle } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -18,13 +17,17 @@ const SignInForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Check for error parameter in URL (from Google OAuth)
+  // Handle URL error parameter (from Google OAuth)
+  // We'll use window.location directly since useSearchParams causes issues with static export
   useEffect(() => {
-    const urlError = searchParams.get('error');
-    if (urlError) {
-      setError(decodeURIComponent(urlError));
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlError = urlParams.get('error');
+      if (urlError) {
+        setError(decodeURIComponent(urlError));
+      }
     }
-  }, [searchParams]);
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
