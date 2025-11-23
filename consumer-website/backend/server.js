@@ -18,6 +18,7 @@ const PORT = process.env.PORT || 5000;
 const allowedOrigins = [
   'https://gold-jewelry-shopy.netlify.app',
   'https://shiva-gold-diamond.netlify.app', // Add your new Netlify domain
+  'https://gold-shopy-frontend.onrender.com', // Add Render frontend domain
   'http://localhost:3000',
   'http://localhost:3001'
 ];
