@@ -163,11 +163,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (currentPath !== '/auth/signin' && currentPath !== '/auth/signup') {
         // Use the Render frontend URL as the base for redirect
         const frontendUrl = typeof window !== 'undefined' 
-          ? (process.env.NEXT_PUBLIC_FRONTEND_URL || window.location.origin)
+          ? (process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://gold-shopy-frontend.onrender.com')
           : 'https://gold-shopy-frontend.onrender.com';
         
         const fullRedirectUrl = frontendUrl + currentPath;
+        console.log('Setting redirect URL:', fullRedirectUrl); // Debug log
         setRedirectUrl(fullRedirectUrl);
+      } else {
+        // For auth pages, redirect to home after login
+        const frontendUrl = typeof window !== 'undefined' 
+          ? (process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://gold-shopy-frontend.onrender.com')
+          : 'https://gold-shopy-frontend.onrender.com';
+        
+        console.log('Setting redirect URL to home'); // Debug log
+        setRedirectUrl(frontendUrl + '/');
       }
     }
     

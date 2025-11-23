@@ -310,6 +310,8 @@ const googleAuthCallback = (req, res, next) => {
     const frontendUrl = process.env.NODE_ENV === 'production' 
       ? (process.env.FRONTEND_URL || 'https://gold-shopy-frontend.onrender.com')
       : (process.env.FRONTEND_URL || 'http://localhost:3000');
+    
+    console.log('Redirecting to frontend with token:', `${frontendUrl}/auth/google-callback?token=${token}`);
     res.redirect(`${frontendUrl}/auth/google-callback?token=${token}`);
   })(req, res, next);
 };

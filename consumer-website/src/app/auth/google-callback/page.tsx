@@ -83,8 +83,10 @@ const GoogleCallbackContent = () => {
                 'https://gold-shopy-frontend.onrender.com'
               );
             }
+            // Use window.location.href for full page redirect
             window.location.href = finalRedirectUrl;
           } else {
+            // Redirect to home page
             window.location.href = '/';
           }
         }, 3000);
