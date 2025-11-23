@@ -1,8 +1,8 @@
 // API utility functions for connecting to the backend
 
 const API_BASE_URL = typeof window !== 'undefined' 
-  ? (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000') + '/api'
-  : 'http://localhost:5000/api';
+  ? (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gold-shopy.onrender.com') + '/api'
+  : 'https://gold-shopy.onrender.com/api';
 
 // Helper function to make API requests
 const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
