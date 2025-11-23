@@ -10,20 +10,18 @@ console.log('GOOGLE_CALLBACK_URL:', process.env.GOOGLE_CALLBACK_URL);
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('BACKEND_URL:', process.env.BACKEND_URL);
 
-// Determine the callback URL
+// Determine the callback URL - fallback to hardcoded values if env vars are not set
 const callbackURL = process.env.GOOGLE_CALLBACK_URL || 
   (process.env.NODE_ENV === 'production' 
-    ? (process.env.BACKEND_URL 
-      ? `${process.env.BACKEND_URL}/api/users/auth/google/callback`
-      : 'https://gold-shopy.onrender.com/api/users/auth/google/callback')
+    ? 'https://gold-shopy.onrender.com/api/users/auth/google/callback'
     : 'http://localhost:5000/api/users/auth/google/callback');
 
 console.log('Using callback URL:', callbackURL);
 
 // Configure Google OAuth strategy
 passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID || 'your-google-client-id',
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'your-google-client-secret',
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: callbackURL
 }, async (accessToken, refreshToken, profile, done) => {
   try {
