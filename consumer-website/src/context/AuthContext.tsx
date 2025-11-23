@@ -154,11 +154,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const loginWithGoogle = () => {
-    // Store current URL as redirect URL before Google OAuth
+    // Store current URL as redirect URL before Google OAuth, but ensure we use the Render frontend URL
     if (typeof window !== 'undefined') {
+      // Get the current path but use the Render frontend URL as base
       const currentPath = window.location.pathname + window.location.search;
+      
+      // Only store redirect URL if it's not one of the auth pages
       if (currentPath !== '/auth/signin' && currentPath !== '/auth/signup') {
-        setRedirectUrl(currentPath);
+        // Use the Render frontend URL as the base for redirect
+        const frontendUrl = typeof window !== 'undefined' 
+          ? (process.env.NEXT_PUBLIC_FRONTEND_URL || window.location.origin)
+          : 'https://gold-shopy-frontend.onrender.com';
+        
+        const fullRedirectUrl = frontendUrl + currentPath;
+        setRedirectUrl(fullRedirectUrl);
       }
     }
     

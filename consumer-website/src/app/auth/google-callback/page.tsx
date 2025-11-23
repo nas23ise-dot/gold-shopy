@@ -75,7 +75,15 @@ const GoogleCallbackContent = () => {
           localStorage.removeItem('redirectUrl'); // Clean up redirect URL
           
           if (redirectUrl && redirectUrl !== '/auth/signin' && redirectUrl !== '/auth/signup') {
-            window.location.href = redirectUrl;
+            // Ensure we redirect to the Render frontend URL, not Netlify
+            let finalRedirectUrl = redirectUrl;
+            if (redirectUrl.startsWith('https://shiva-gold-diamond.netlify.app')) {
+              finalRedirectUrl = redirectUrl.replace(
+                'https://shiva-gold-diamond.netlify.app',
+                'https://gold-shopy-frontend.onrender.com'
+              );
+            }
+            window.location.href = finalRedirectUrl;
           } else {
             window.location.href = '/';
           }
@@ -107,7 +115,15 @@ const GoogleCallbackContent = () => {
               localStorage.removeItem('redirectUrl'); // Clean up redirect URL
               
               if (redirectUrl && redirectUrl !== '/auth/signin' && redirectUrl !== '/auth/signup') {
-                window.location.href = redirectUrl;
+                // Ensure we redirect to the Render frontend URL, not Netlify
+                let finalRedirectUrl = redirectUrl;
+                if (redirectUrl.startsWith('https://shiva-gold-diamond.netlify.app')) {
+                  finalRedirectUrl = redirectUrl.replace(
+                    'https://shiva-gold-diamond.netlify.app',
+                    'https://gold-shopy-frontend.onrender.com'
+                  );
+                }
+                window.location.href = finalRedirectUrl;
               } else {
                 window.location.href = '/';
               }
