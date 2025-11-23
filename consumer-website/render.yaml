@@ -22,7 +22,7 @@ services:
       - key: GOOGLE_CALLBACK_URL
         value: https://gold-shopy.onrender.com/api/users/auth/google/callback
       - key: FRONTEND_URL
-        value: https://shiva-gold-diamond.netlify.app
+        value: https://gold-shopy-frontend.onrender.com
       - key: BACKEND_URL
         value: https://gold-shopy.onrender.com
       - key: PORT

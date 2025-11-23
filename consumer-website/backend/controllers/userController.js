@@ -284,7 +284,7 @@ const googleAuthCallback = (req, res, next) => {
       console.error('Error stack:', err.stack);
       // Redirect to frontend with error
       const frontendUrl = process.env.NODE_ENV === 'production' 
-        ? (process.env.FRONTEND_URL || 'https://shiva-gold-diamond.netlify.app')
+        ? (process.env.FRONTEND_URL || 'https://gold-shopy-frontend.onrender.com')
         : (process.env.FRONTEND_URL || 'http://localhost:3000');
       return res.redirect(`${frontendUrl}/auth/signin?error=${encodeURIComponent(err.message || 'Unknown error')}`);
     }
@@ -294,7 +294,7 @@ const googleAuthCallback = (req, res, next) => {
       console.error('Info object:', info);
       // Redirect to frontend with error
       const frontendUrl = process.env.NODE_ENV === 'production' 
-        ? (process.env.FRONTEND_URL || 'https://shiva-gold-diamond.netlify.app')
+        ? (process.env.FRONTEND_URL || 'https://gold-shopy-frontend.onrender.com')
         : (process.env.FRONTEND_URL || 'http://localhost:3000');
       return res.redirect(`${frontendUrl}/auth/signin?error=Authentication failed - No user returned`);
     }
@@ -308,7 +308,7 @@ const googleAuthCallback = (req, res, next) => {
     
     // Redirect to frontend with token
     const frontendUrl = process.env.NODE_ENV === 'production' 
-      ? (process.env.FRONTEND_URL || 'https://shiva-gold-diamond.netlify.app')
+      ? (process.env.FRONTEND_URL || 'https://gold-shopy-frontend.onrender.com')
       : (process.env.FRONTEND_URL || 'http://localhost:3000');
     res.redirect(`${frontendUrl}/auth/google-callback?token=${token}`);
   })(req, res, next);
