@@ -259,6 +259,12 @@ const logoutUser = async (req, res) => {
 // Google OAuth authentication
 const googleAuth = (req, res, next) => {
   console.log('Google OAuth authentication initiated');
+  console.log('Environment variables:', {
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET',
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'NOT SET',
+    GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL,
+    NODE_ENV: process.env.NODE_ENV
+  });
   passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
 };
 

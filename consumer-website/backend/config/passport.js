@@ -3,6 +3,12 @@ const passport = require('passport');
 const User = require('../models/User');
 const mockDb = require('../utils/mockDb');
 
+// Log environment variables for debugging (remove in production)
+console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET');
+console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'NOT SET');
+console.log('GOOGLE_CALLBACK_URL:', process.env.GOOGLE_CALLBACK_URL);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+
 // Configure Google OAuth strategy
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID || 'your-google-client-id',
