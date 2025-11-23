@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, Lock, Mail, User, Chrome } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-const SignInPage = () => {
+const SignInContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, loginUser, loginWithGoogle } = useAuth();
@@ -199,4 +199,10 @@ const SignInPage = () => {
   );
 };
 
-export default SignInPage;
+export default function SignInPage() {
+  return (
+    <div>
+      <SignInContent />
+    </div>
+  );
+}
