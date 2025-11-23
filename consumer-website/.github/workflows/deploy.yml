@@ -1,0 +1,38 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: consumer-website/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd consumer-website
+          npm install
+
+      - name: Build
+        run: |
+          cd consumer-website
+          npm run build
+        env:
+          NEXT_PUBLIC_API_URL: https://gold-shopy.onrender.com/api
+          NEXT_PUBLIC_BACKEND_URL: https://gold-shopy.onrender.com
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./consumer-website/out
+          cname: your-custom-domain.com  # Remove this line if you don't have a custom domain
