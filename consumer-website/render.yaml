@@ -11,7 +11,13 @@ services:
         value: false
       - key: MONGODB_URI
         value: mongodb+srv://Gold-shop:${MONGODB_PASSWORD}@cluster0.ela5ylc.mongodb.net/goldshop?retryWrites=true&w=majority
+      - key: MONGODB_PASSWORD
+        sync: false
       - key: JWT_SECRET
-        value: goldshopsecret
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
       - key: PORT
         value: 10000
