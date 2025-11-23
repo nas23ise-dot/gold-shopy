@@ -10,6 +10,14 @@ console.log('GOOGLE_CALLBACK_URL:', process.env.GOOGLE_CALLBACK_URL);
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('BACKEND_URL:', process.env.BACKEND_URL);
 
+// Log the actual values (first few characters for security)
+if (process.env.GOOGLE_CLIENT_ID) {
+  console.log('GOOGLE_CLIENT_ID (first 10 chars):', process.env.GOOGLE_CLIENT_ID.substring(0, 10));
+}
+if (process.env.GOOGLE_CLIENT_SECRET) {
+  console.log('GOOGLE_CLIENT_SECRET (first 5 chars):', process.env.GOOGLE_CLIENT_SECRET.substring(0, 5));
+}
+
 // Determine the callback URL - fallback to hardcoded values if env vars are not set
 const callbackURL = process.env.GOOGLE_CALLBACK_URL || 
   (process.env.NODE_ENV === 'production' 
