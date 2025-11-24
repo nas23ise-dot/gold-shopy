@@ -20,7 +20,9 @@ import { useCart } from '@/context/CartContext';
 
 const Header = () => {
   const { user, logout } = useAuth();
-  const { cartCount, wishlistCount, refreshCart, refreshWishlist } = useCart();
+  const { getCartCount, getWishlistCount, refreshCart, refreshWishlist } = useCart();
+  const cartCount = getCartCount();
+  const wishlistCount = getWishlistCount();
   console.log('Header rendered, user:', user, 'cart count:', cartCount, 'wishlist count:', wishlistCount); // Add logging
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -64,6 +66,11 @@ const Header = () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
+  // Update cart and wishlist counts when cart context changes
+  useEffect(() => {
+    // The counts are calculated on each render now
+  }, [getCartCount, getWishlistCount]);
 
   const handleLogout = useCallback(() => {
     logout();
@@ -305,7 +312,7 @@ const Header = () => {
               <Link href="/profile/wishlist" className="p-2 hover:bg-gray-100 rounded-full transition-colors relative">
                 <Heart size={20} className="text-gray-600" />
                 {(() => {
-                  const count = wishlistCount;
+                  const count = getWishlistCount();
                   console.log('Wishlist count:', count); // Add logging
                   return count > 0 && (
                     <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -386,7 +393,7 @@ const Header = () => {
               <Link href="/profile/cart" className="p-2 hover:bg-gray-100 rounded-full transition-colors relative">
                 <ShoppingBag size={20} className="text-gray-600" />
                 {(() => {
-                  const count = cartCount;
+                  const count = getCartCount();
                   console.log('Cart count:', count); // Add logging
                   return count > 0 && (
                     <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
