@@ -82,11 +82,11 @@ export const addToCart = async (item: Omit<CartItem, 'quantity'>): Promise<void>
     return;
   }
   
-  // Check if user is authenticated, if not redirect to login
+  // Check if user is authenticated
   if (!isAuthenticated()) {
-    console.log('User not authenticated, redirecting to login'); // Add logging
-    redirectToLogin();
-    return;
+    console.log('User not authenticated'); // Add logging
+    // Don't redirect to login automatically, just use localStorage
+    // This prevents redirect loops when user is not logged in
   }
   
   const token = getAuthToken();
@@ -108,8 +108,8 @@ export const addToCart = async (item: Omit<CartItem, 'quantity'>): Promise<void>
     }
   }
   
-  console.log('Falling back to localStorage'); // Add logging
-  // Fallback to localStorage
+  console.log('Using localStorage'); // Add logging
+  // Use localStorage for both authenticated and non-authenticated users
   const cartItems = getCartItems();
   console.log('Current cart items from localStorage:', cartItems); // Add logging
   const existingItemIndex = cartItems.findIndex(cartItem => cartItem.id === item.id);
@@ -137,8 +137,9 @@ export const updateCartQuantity = async (id: number, quantity: number): Promise<
   
   // Check if user is authenticated
   if (!isAuthenticated()) {
-    redirectToLogin();
-    return;
+    console.log('User not authenticated for cart update'); // Add logging
+    // Don't redirect to login automatically, just use localStorage
+    // This prevents redirect loops when user is not logged in
   }
   
   const token = getAuthToken();
@@ -161,7 +162,7 @@ export const updateCartQuantity = async (id: number, quantity: number): Promise<
     }
   }
   
-  // Fallback to localStorage
+  // Use localStorage for both authenticated and non-authenticated users
   const cartItems = getCartItems();
   const itemIndex = cartItems.findIndex(item => item.id === id);
   
@@ -187,8 +188,9 @@ export const removeFromCart = async (id: number): Promise<void> => {
   
   // Check if user is authenticated
   if (!isAuthenticated()) {
-    redirectToLogin();
-    return;
+    console.log('User not authenticated for cart removal'); // Add logging
+    // Don't redirect to login automatically, just use localStorage
+    // This prevents redirect loops when user is not logged in
   }
   
   const token = getAuthToken();
@@ -207,7 +209,7 @@ export const removeFromCart = async (id: number): Promise<void> => {
     }
   }
   
-  // Fallback to localStorage
+  // Use localStorage for both authenticated and non-authenticated users
   const cartItems = getCartItems();
   const filteredItems = cartItems.filter(item => item.id !== id);
   localStorage.setItem('cart', JSON.stringify(filteredItems));
@@ -240,10 +242,11 @@ export const getWishlistCount = (): number => {
 export const addToWishlist = async (item: WishlistItem): Promise<void> => {
   if (typeof window === 'undefined') return;
   
-  // Check if user is authenticated, if not redirect to login
+  // Check if user is authenticated
   if (!isAuthenticated()) {
-    redirectToLogin();
-    return;
+    console.log('User not authenticated for wishlist'); // Add logging
+    // Don't redirect to login automatically, just use localStorage
+    // This prevents redirect loops when user is not logged in
   }
   
   const token = getAuthToken();
@@ -262,7 +265,7 @@ export const addToWishlist = async (item: WishlistItem): Promise<void> => {
     }
   }
   
-  // Fallback to localStorage
+  // Use localStorage for both authenticated and non-authenticated users
   const wishlistItems = getWishlistItems();
   const existingItemIndex = wishlistItems.findIndex(wishlistItem => wishlistItem.id === item.id);
   
@@ -282,8 +285,9 @@ export const removeFromWishlist = async (id: number): Promise<void> => {
   
   // Check if user is authenticated
   if (!isAuthenticated()) {
-    redirectToLogin();
-    return;
+    console.log('User not authenticated for wishlist removal'); // Add logging
+    // Don't redirect to login automatically, just use localStorage
+    // This prevents redirect loops when user is not logged in
   }
   
   const token = getAuthToken();
@@ -302,7 +306,7 @@ export const removeFromWishlist = async (id: number): Promise<void> => {
     }
   }
   
-  // Fallback to localStorage
+  // Use localStorage for both authenticated and non-authenticated users
   const wishlistItems = getWishlistItems();
   const filteredItems = wishlistItems.filter(item => item.id !== id);
   localStorage.setItem('wishlist', JSON.stringify(filteredItems));
@@ -318,8 +322,9 @@ export const moveFromWishlistToCart = async (id: number): Promise<void> => {
   
   // Check if user is authenticated
   if (!isAuthenticated()) {
-    redirectToLogin();
-    return;
+    console.log('User not authenticated for wishlist to cart move'); // Add logging
+    // Don't redirect to login automatically, just use localStorage
+    // This prevents redirect loops when user is not logged in
   }
   
   const token = getAuthToken();
@@ -339,7 +344,7 @@ export const moveFromWishlistToCart = async (id: number): Promise<void> => {
     }
   }
   
-  // Fallback to localStorage
+  // Use localStorage for both authenticated and non-authenticated users
   // Get wishlist item
   const wishlistItems = getWishlistItems();
   const wishlistItem = wishlistItems.find(item => item.id === id);

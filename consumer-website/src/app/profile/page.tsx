@@ -19,9 +19,11 @@ import {
 import { getCartCount, getWishlistCount } from '@/lib/cartUtils';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
 
 const ProfilePage = () => {
   const { user, logout } = useAuth();
+  const { getCartCount, getWishlistCount } = useCart();
   const [activeTab, setActiveTab] = useState('profile');
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);

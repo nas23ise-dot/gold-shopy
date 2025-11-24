@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import Link from 'next/link';
@@ -17,10 +17,11 @@ interface Slide {
 }
 
 const HeroCarousel = () => {
+  console.log('HeroCarousel rendered'); // Add logging
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
 
-  const slides: Slide[] = [
+  const slides: Slide[] = useMemo(() => [
     {
       id: 1,
       image: 'https://via.placeholder.com/1920x800/D4AF37/FFFFFF?text=Exquisite+Gold+Collection',
@@ -61,7 +62,7 @@ const HeroCarousel = () => {
       ctaLink: '/collections/traditional',
       bgGradient: 'from-yellow-900/70 to-yellow-600/70'
     }
-  ];
+  ], []);
 
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -71,9 +72,9 @@ const HeroCarousel = () => {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
   }, [slides.length]);
 
-  const goToSlide = (index: number) => {
+  const goToSlide = useCallback((index: number) => {
     setCurrentSlide(index);
-  };
+  }, []);
 
   // Auto-play functionality
   useEffect(() => {
@@ -93,7 +94,7 @@ const HeroCarousel = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.7, ease: "easeInOut" }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
           className="absolute inset-0"
         >
           {/* Background Image */}
@@ -112,9 +113,9 @@ const HeroCarousel = () => {
                 
                 {/* Animated Content */}
                 <motion.div
-                  initial={{ y: 30, opacity: 0 }}
+                  initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
                 >
                   <h3 className="text-lg md:text-xl font-light mb-2 text-amber-200">
                     {slides[currentSlide].subtitle}
@@ -131,22 +132,14 @@ const HeroCarousel = () => {
                   <div className="flex flex-col sm:flex-row gap-4">
                     <Link
                       href={slides[currentSlide].ctaLink}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.location.href = slides[currentSlide].ctaLink;
-                      }}
-                      className="inline-flex items-center px-8 py-4 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer z-10 relative"
+                      className="inline-flex items-center px-8 py-4 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
                     >
                       {slides[currentSlide].ctaText}
                     </Link>
                     
                     <Link
                       href="/about"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.location.href = '/about';
-                      }}
-                      className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-gray-900 transition-all duration-300 cursor-pointer z-10 relative"
+                      className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-gray-900 transition-all duration-300"
                     >
                       Our Heritage
                     </Link>
@@ -200,7 +193,7 @@ const HeroCarousel = () => {
       </button>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-6 right-6 text-white/70 flex flex-col items-center animate-bounce">
+      <div className="absolute bottom-6 right-6 text-white/70 flex flex-col items-center">
         <span className="text-xs mb-2">Scroll Down</span>
         <div className="w-px h-8 bg-white/50" />
       </div>

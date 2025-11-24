@@ -2,11 +2,15 @@ import HeroCarousel from "@/components/HeroCarousel";
 import FeaturedSections from "@/components/FeaturedSections";
 import TrustSection from "@/components/TrustSection";
 import Link from "next/link";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 export default function Home() {
+  console.log('Home page rendered'); // Add logging
   return (
     <div className="min-h-screen">
-      <HeroCarousel />
+      <ErrorBoundary>
+        <HeroCarousel />
+      </ErrorBoundary>
       
       {/* Tagline Section */}
       <section className="bg-gradient-to-r from-amber-50 to-yellow-50 py-12">
@@ -21,8 +25,12 @@ export default function Home() {
         </div>
       </section>
       
-      <FeaturedSections />
-      <TrustSection />
+      <ErrorBoundary>
+        <FeaturedSections />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <TrustSection />
+      </ErrorBoundary>
       
       {/* Admin Access - only visible in development */}
       {process.env.NODE_ENV === 'development' && (

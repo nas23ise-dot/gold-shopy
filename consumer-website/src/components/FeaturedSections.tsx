@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight, Star, Heart, Eye } from 'lucide-react';
@@ -33,7 +33,7 @@ interface FeaturedSectionProps {
 const ProductCard = ({ product }: { product: Product }) => {
   const router = useRouter();
 
-  const handleAddToCart = async (e: React.MouseEvent) => {
+  const handleAddToCart = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     try {
@@ -48,9 +48,9 @@ const ProductCard = ({ product }: { product: Product }) => {
     } catch (error) {
       console.error('Error adding to cart:', error);
     }
-  };
+  }, [product]);
 
-  const handleAddToWishlist = async (e: React.MouseEvent) => {
+  const handleAddToWishlist = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     try {
@@ -67,21 +67,21 @@ const ProductCard = ({ product }: { product: Product }) => {
     } catch (error) {
       console.error('Error adding to wishlist:', error);
     }
-  };
+  }, [product]);
 
-  const handleViewProduct = (e: React.MouseEvent) => {
+  const handleViewProduct = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     router.push(`/products/${product.id}`);
-  };
+  }, [product.id, router]);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      whileHover={{ y: -5 }}
+      viewport={{ once: true, margin: "-100px" }}
       transition={{ duration: 0.3 }}
-      className="group relative bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer"
+      whileHover={{ y: -2 }}
+      className="group relative bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
     >
       <Link href={`/products/${product.id}`}>
         {/* Image Container */}
@@ -89,7 +89,7 @@ const ProductCard = ({ product }: { product: Product }) => {
           <img
             src={product.image}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
           
           {/* Badges */}
@@ -130,7 +130,7 @@ const ProductCard = ({ product }: { product: Product }) => {
           </div>
 
           {/* Overlay on hover */}
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
           {/* Quick Add to Cart */}
           <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-10">
@@ -206,7 +206,7 @@ const FeaturedSection = ({
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-100px" }}
             className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4"
           >
             {title}
@@ -215,7 +215,7 @@ const FeaturedSection = ({
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              viewport={{ once: true, margin: "-100px" }}
               transition={{ delay: 0.1 }}
               className="text-lg text-gray-600 max-w-2xl mx-auto"
             >
@@ -228,11 +228,11 @@ const FeaturedSection = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
           {products.map((product, index) => (
             <motion.div
-              key={product.id}
+              key={`${product.id}-${index}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ delay: index * 0.05 }}
             >
               <ProductCard product={product} />
             </motion.div>
@@ -244,7 +244,7 @@ const FeaturedSection = ({
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-100px" }}
             className="text-center"
           >
             <Link
@@ -267,122 +267,147 @@ const FeaturedSections = () => {
   const [newArrivals, setNewArrivals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        // Fetch products from API
-        const response = await productApi.getAllProducts();
-        const products = response.products || [];
-        
-        // Filter best sellers and new arrivals
-        const bestSellersData = products
-          .filter((product: any) => product.isBestseller)
-          .slice(0, 4);
-          
-        const newArrivalsData = products
-          .filter((product: any) => product.isNew)
-          .slice(0, 4);
-        
-        setBestSellers(bestSellersData);
-        setNewArrivals(newArrivalsData);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        // Fallback to hardcoded data if API fails
-        setBestSellers([
-          {
-            id: 1,
-            name: "Classic Gold Chain Necklace",
-            price: 185000,
-            originalPrice: 220000,
-            image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Chain",
-            category: "Gold Necklaces",
-            material: "Gold",
-            rating: 4.8,
-            isBestseller: true,
-            discount: 16
-          },
-          {
-            id: 2,
-            name: "Diamond Solitaire Ring",
-            price: 675000,
-            image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Ring",
-            category: "Diamond Rings",
-            material: "Diamond",
-            rating: 4.9,
-            isBestseller: true
-          },
-          {
-            id: 3,
-            name: "Traditional Gold Bangles",
-            price: 125000,
-            image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Bangles",
-            category: "Gold Bangles",
-            material: "Gold",
-            rating: 4.7,
-            isBestseller: true
-          },
-          {
-            id: 4,
-            name: "Gold Bangle Set",
-            price: 265000,
-            image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Bangle+Set",
-            category: "Gold Bangles",
-            material: "Gold",
-            rating: 4.6,
-            isBestseller: true
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      // Fetch products from API
+      const response = await productApi.getAllProducts();
+      console.log('Products API response:', response); // Add logging
+      
+      // Handle both possible response formats
+      let products = [];
+      if (Array.isArray(response)) {
+        // Direct array response (from searchProducts)
+        products = response;
+      } else if (response.products && Array.isArray(response.products)) {
+        // Object with products property (from getProducts)
+        products = response.products;
+      } else if (response.data && Array.isArray(response.data)) {
+        // Object with data property
+        products = response.data;
+      } else if (response && typeof response === 'object') {
+        // Handle other possible response formats
+        console.log('Unknown response format, trying to extract products');
+        // Try to find a products array in the response
+        for (const key in response) {
+          if (Array.isArray(response[key])) {
+            products = response[key];
+            break;
           }
-        ]);
-        
-        setNewArrivals([
-          {
-            id: 5,
-            name: "Elegant Gold Pendant Necklace",
-            price: 155000,
-            image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Pendant+Necklace",
-            category: "Gold Necklaces",
-            material: "Gold",
-            rating: 4.7,
-            isNew: true
-          },
-          {
-            id: 6,
-            name: "Rose Gold Wedding Band",
-            price: 315000,
-            image: "https://via.placeholder.com/400x400/E11D48/FFFFFF?text=Rose+Gold+Ring",
-            category: "Gold Rings",
-            material: "Rose Gold",
-            rating: 4.8,
-            isNew: true
-          },
-          {
-            id: 7,
-            name: "Diamond Bangle Set",
-            price: 780000,
-            image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Bangles",
-            category: "Diamond Bangles",
-            material: "Diamond",
-            rating: 4.8,
-            isNew: true
-          },
-          {
-            id: 8,
-            name: "Platinum Cuff Bracelet",
-            price: 420000,
-            image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Bangle",
-            category: "Platinum Bangles",
-            material: "Platinum",
-            rating: 4.8,
-            isNew: true
-          }
-        ]);
-      } finally {
-        setLoading(false);
+        }
       }
-    };
-
-    fetchProducts();
+      
+      console.log('Processed products:', products); // Add logging
+      
+      // Filter best sellers and new arrivals
+      const bestSellersData = products
+        .filter((product: any) => product.isBestseller)
+        .slice(0, 4);
+        
+      const newArrivalsData = products
+        .filter((product: any) => product.isNew)
+        .slice(0, 4);
+      
+      setBestSellers(bestSellersData);
+      setNewArrivals(newArrivalsData);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      // Fallback to hardcoded data if API fails
+      setBestSellers([
+        {
+          id: 1,
+          name: "Classic Gold Chain Necklace",
+          price: 185000,
+          originalPrice: 220000,
+          image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Chain",
+          category: "Gold Necklaces",
+          material: "Gold",
+          rating: 4.8,
+          isBestseller: true,
+          discount: 16
+        },
+        {
+          id: 2,
+          name: "Diamond Solitaire Ring",
+          price: 675000,
+          image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Ring",
+          category: "Diamond Rings",
+          material: "Diamond",
+          rating: 4.9,
+          isBestseller: true
+        },
+        {
+          id: 3,
+          name: "Traditional Gold Bangles",
+          price: 125000,
+          image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Bangles",
+          category: "Gold Bangles",
+          material: "Gold",
+          rating: 4.7,
+          isBestseller: true
+        },
+        {
+          id: 4,
+          name: "Gold Bangle Set",
+          price: 265000,
+          image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Bangle+Set",
+          category: "Gold Bangles",
+          material: "Gold",
+          rating: 4.6,
+          isBestseller: true
+        }
+      ]);
+      
+      setNewArrivals([
+        {
+          id: 5,
+          name: "Elegant Gold Pendant Necklace",
+          price: 155000,
+          image: "https://via.placeholder.com/400x400/D4AF37/FFFFFF?text=Gold+Pendant+Necklace",
+          category: "Gold Necklaces",
+          material: "Gold",
+          rating: 4.7,
+          isNew: true
+        },
+        {
+          id: 6,
+          name: "Rose Gold Wedding Band",
+          price: 315000,
+          image: "https://via.placeholder.com/400x400/E11D48/FFFFFF?text=Rose+Gold+Ring",
+          category: "Gold Rings",
+          material: "Rose Gold",
+          rating: 4.8,
+          isNew: true
+        },
+        {
+          id: 7,
+          name: "Diamond Bangle Set",
+          price: 780000,
+          image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Diamond+Bangles",
+          category: "Diamond Bangles",
+          material: "Diamond",
+          rating: 4.8,
+          isNew: true
+        },
+        {
+          id: 8,
+          name: "Platinum Cuff Bracelet",
+          price: 420000,
+          image: "https://via.placeholder.com/400x400/E5E7EB/1F2937?text=Platinum+Bangle",
+          category: "Platinum Bangles",
+          material: "Platinum",
+          rating: 4.8,
+          isNew: true
+        }
+      ]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   if (loading) {
     return (

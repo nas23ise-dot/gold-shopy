@@ -29,9 +29,12 @@ const GoogleCallbackContent = () => {
 
   useEffect(() => {
     const handleGoogleCallback = () => {
+      console.log('Handling Google OAuth callback'); // Add logging
       // Get token from URL parameters
       const token = searchParams.get('token');
       const error = searchParams.get('error');
+      
+      console.log('Token:', token, 'Error:', error); // Add logging
       
       if (error) {
         console.error('Google OAuth error:', error);
@@ -50,6 +53,7 @@ const GoogleCallbackContent = () => {
       try {
         // Decode the JWT token to get user info
         const payload = decodeToken(token);
+        console.log('Decoded token payload:', payload); // Add logging
         
         if (!payload) {
           throw new Error('Failed to decode token');
@@ -63,6 +67,8 @@ const GoogleCallbackContent = () => {
           tokenExpiry: Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 days
         };
         
+        console.log('User data:', userData); // Add logging
+        
         // Log in the user
         login(userData);
         
@@ -71,25 +77,10 @@ const GoogleCallbackContent = () => {
         
         // Redirect to intended destination or home page after a short delay
         setTimeout(() => {
-          const redirectUrl = getRedirectUrl();
-          localStorage.removeItem('redirectUrl'); // Clean up redirect URL
-          
-          if (redirectUrl && redirectUrl !== '/auth/signin' && redirectUrl !== '/auth/signup') {
-            // Ensure we redirect to the Render frontend URL, not Netlify
-            let finalRedirectUrl = redirectUrl;
-            if (redirectUrl.startsWith('https://shiva-gold-diamond.netlify.app')) {
-              finalRedirectUrl = redirectUrl.replace(
-                'https://shiva-gold-diamond.netlify.app',
-                'https://gold-shopy-frontend.onrender.com'
-              );
-            }
-            // Use window.location.href for full page redirect
-            window.location.href = finalRedirectUrl;
-          } else {
-            // Redirect to home page
-            window.location.href = '/';
-          }
-        }, 3000);
+          // Always redirect to home page after login, regardless of where user was before
+          console.log('Redirecting to home page'); // Add logging
+          window.location.href = '/';
+        }, 100); // Reduced delay to 100ms to minimize chance of user navigating away
       } catch (err) {
         console.error('Error processing Google OAuth callback:', err);
         alert('Authentication failed. Please try again.');
@@ -113,22 +104,10 @@ const GoogleCallbackContent = () => {
           <p className="text-gray-600 mb-6">Welcome to Gold Shop. Redirecting to your destination...</p>
           <button
             onClick={() => {
-              const redirectUrl = getRedirectUrl();
-              localStorage.removeItem('redirectUrl'); // Clean up redirect URL
-              
-              if (redirectUrl && redirectUrl !== '/auth/signin' && redirectUrl !== '/auth/signup') {
-                // Ensure we redirect to the Render frontend URL, not Netlify
-                let finalRedirectUrl = redirectUrl;
-                if (redirectUrl.startsWith('https://shiva-gold-diamond.netlify.app')) {
-                  finalRedirectUrl = redirectUrl.replace(
-                    'https://shiva-gold-diamond.netlify.app',
-                    'https://gold-shopy-frontend.onrender.com'
-                  );
-                }
-                window.location.href = finalRedirectUrl;
-              } else {
-                window.location.href = '/';
-              }
+              console.log('Continue button clicked'); // Add logging
+              // Always redirect to home page after login, regardless of where user was before
+              console.log('Redirecting to home page'); // Add logging
+              window.location.href = '/';
             }}
             className="px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors cursor-pointer"
           >

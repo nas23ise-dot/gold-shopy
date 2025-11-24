@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Shield, 
@@ -24,7 +24,9 @@ interface TrustFeature {
 }
 
 const TrustSection = () => {
-  const trustFeatures: TrustFeature[] = [
+  console.log('TrustSection rendered'); // Add logging
+  
+  const trustFeatures: TrustFeature[] = useMemo(() => [
     {
       id: 1,
       icon: <Shield className="w-8 h-8" />,
@@ -97,14 +99,14 @@ const TrustSection = () => {
         "Tracking provided"
       ]
     }
-  ];
+  ], []);
 
-  const stats = [
+  const stats = useMemo(() => [
     { icon: <Users className="w-8 h-8" />, number: "10K+", label: "Happy Customers" },
     { icon: <Star className="w-8 h-8" />, number: "4.8/5", label: "Average Rating" },
     { icon: <Globe className="w-8 h-8" />, number: "Chintamani", label: "Trusted Locally" },
     { icon: <Award className="w-8 h-8" />, number: "500+", label: "Unique Designs" }
-  ];
+  ], []);
 
   return (
     <section className="py-20 bg-gradient-to-br from-slate-50 to-gray-100">
@@ -115,7 +117,8 @@ const TrustSection = () => {
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.3 }}
             className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-6"
           >
             Our <span className="text-amber-600">Promises</span> to You
@@ -123,8 +126,8 @@ const TrustSection = () => {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.3, delay: 0.1 }}
             className="text-lg text-gray-600 max-w-3xl mx-auto"
           >
             At Shiva Jewellers, we are committed to excellence in every aspect of our service. 
@@ -139,10 +142,10 @@ const TrustSection = () => {
               key={feature.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -5, scale: 1.02 }}
-              className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 group"
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+              whileHover={{ y: -2 }}
+              className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 group"
             >
               {/* Icon */}
               <div className="flex items-center justify-center w-16 h-16 bg-amber-100 text-amber-600 rounded-xl mb-6 group-hover:bg-amber-600 group-hover:text-white transition-all duration-300">
@@ -175,7 +178,8 @@ const TrustSection = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.3 }}
           className="bg-gradient-to-r from-amber-600 to-amber-700 rounded-3xl p-8 md:p-12"
         >
           <div className="text-center mb-12">
@@ -193,8 +197,8 @@ const TrustSection = () => {
                 key={index}
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
                 className="text-center"
               >
                 <div className="flex items-center justify-center w-16 h-16 bg-white/20 rounded-xl mb-4 mx-auto text-white">
@@ -215,7 +219,8 @@ const TrustSection = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.3 }}
           className="mt-16 text-center"
         >
           <h4 className="text-xl font-semibold text-gray-800 mb-8">

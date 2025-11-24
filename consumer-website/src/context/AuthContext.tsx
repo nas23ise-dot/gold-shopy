@@ -51,6 +51,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsAuthenticated(false);
     localStorage.removeItem('user');
     localStorage.removeItem('redirectUrl');
+    
+    // Also clear any cart/wishlist data that might be tied to the user
+    localStorage.removeItem('cart');
+    localStorage.removeItem('wishlist');
   };
 
   // Set redirect URL
@@ -94,11 +98,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             logout();
           }
         } else {
+          // Token is still valid
           setUser(userData);
           setIsAuthenticated(true);
         }
       } catch (e) {
         // If there's an error parsing, remove the invalid data
+        console.error('Error parsing stored user data:', e);
         localStorage.removeItem('user');
       }
     }
@@ -154,36 +160,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const loginWithGoogle = () => {
-    // Store current URL as redirect URL before Google OAuth, but ensure we use the Render frontend URL
+    // Always set redirect URL to home page after Google OAuth
     if (typeof window !== 'undefined') {
-      // Get the current path but use the Render frontend URL as base
-      const currentPath = window.location.pathname + window.location.search;
+      const frontendUrl = typeof window !== 'undefined' 
+        ? (process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://gold-shopy-frontend.onrender.com')
+        : 'https://gold-shopy-frontend.onrender.com';
       
-      // Only store redirect URL if it's not one of the auth pages
-      if (currentPath !== '/auth/signin' && currentPath !== '/auth/signup') {
-        // Use the Render frontend URL as the base for redirect
-        const frontendUrl = typeof window !== 'undefined' 
-          ? (process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://gold-shopy-frontend.onrender.com')
-          : 'https://gold-shopy-frontend.onrender.com';
-        
-        const fullRedirectUrl = frontendUrl + currentPath;
-        console.log('Setting redirect URL:', fullRedirectUrl); // Debug log
-        setRedirectUrl(fullRedirectUrl);
-      } else {
-        // For auth pages, redirect to home after login
-        const frontendUrl = typeof window !== 'undefined' 
-          ? (process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://gold-shopy-frontend.onrender.com')
-          : 'https://gold-shopy-frontend.onrender.com';
-        
-        console.log('Setting redirect URL to home'); // Debug log
-        setRedirectUrl(frontendUrl + '/');
-      }
+      console.log('Setting redirect URL to home'); // Debug log
+      setRedirectUrl(frontendUrl + '/');
     }
     
     // Redirect to Google OAuth endpoint
     const backendUrl = typeof window !== 'undefined'
       ? (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000')
       : 'http://localhost:5000';
+    console.log('Redirecting to Google OAuth:', `${backendUrl}/api/users/auth/google`); // Add logging
     window.location.href = `${backendUrl}/api/users/auth/google`;
   };
 

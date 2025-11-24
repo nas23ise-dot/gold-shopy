@@ -21,7 +21,7 @@ if (process.env.GOOGLE_CLIENT_SECRET) {
 // Determine the callback URL - fallback to hardcoded values if env vars are not set
 const callbackURL = process.env.GOOGLE_CALLBACK_URL || 
   (process.env.NODE_ENV === 'production' 
-    ? 'https://gold-shopy.onrender.com/api/users/auth/google/callback'
+    ? 'http://localhost:5000/api/users/auth/google/callback'
     : 'http://localhost:5000/api/users/auth/google/callback');
 
 console.log('Using callback URL:', callbackURL);

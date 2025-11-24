@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -20,7 +20,8 @@ import { useCart } from '@/context/CartContext';
 
 const Header = () => {
   const { user, logout } = useAuth();
-  const { cartCount, wishlistCount } = useCart();
+  const { cartCount, wishlistCount, refreshCart, refreshWishlist } = useCart();
+  console.log('Header rendered, user:', user, 'cart count:', cartCount, 'wishlist count:', wishlistCount); // Add logging
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -64,20 +65,20 @@ const Header = () => {
     };
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout();
     // Redirect to home page
     window.location.href = '/';
-  };
+  }, [logout]);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
       window.location.href = `/search?q=${encodeURIComponent(searchTerm)}`;
     }
-  };
+  }, [searchTerm]);
 
-  const categories = {
+  const categories = useMemo(() => ({
     'Gold': [
       'Gold Necklaces',
       'Gold Earrings', 
@@ -112,16 +113,16 @@ const Header = () => {
       'Gold Bars',
       'Silver Bars'
     ]
-  };
+  }), []);
 
-  const collections = [
+  const collections = useMemo(() => [
     'Best Sellers',
     'New Arrivals',
     'Bridal Collection',
     'Traditional',
     'Contemporary',
     'Antique'
-  ];
+  ], []);
 
   return (
     <>
@@ -147,7 +148,7 @@ const Header = () => {
       </div>
 
       {/* Main Header */}
-      <header className={`sticky top-0 z-50 transition-all duration-300 ${
+      <header className={`sticky top-0 z-50 transition-all duration-300 ease-in-out ${
         isScrolled ? 'bg-white shadow-lg' : 'bg-white'
       }`}>
         <div className="max-w-7xl mx-auto px-4">
@@ -181,6 +182,7 @@ const Header = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.2 }}
                       onMouseEnter={() => setActiveDropdown('collections')}
                       onMouseLeave={() => setActiveDropdown(null)}
                       className="absolute top-full left-0 bg-white shadow-xl rounded-lg p-6 min-w-[200px] mt-2 z-50"
@@ -227,6 +229,7 @@ const Header = () => {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
+                        transition={{ duration: 0.2 }}
                         onMouseEnter={() => setActiveDropdown(`category-${category}`)}
                         onMouseLeave={() => setActiveDropdown(null)}
                         className="absolute top-full left-0 bg-white shadow-xl rounded-lg p-6 min-w-[220px] mt-2 z-50"
@@ -301,11 +304,15 @@ const Header = () => {
               
               <Link href="/profile/wishlist" className="p-2 hover:bg-gray-100 rounded-full transition-colors relative">
                 <Heart size={20} className="text-gray-600" />
-                {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {wishlistCount}
-                  </span>
-                )}
+                {(() => {
+                  const count = wishlistCount;
+                  console.log('Wishlist count:', count); // Add logging
+                  return count > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {count}
+                    </span>
+                  );
+                })()}
               </Link>
               
               {/* User Profile Dropdown */}
@@ -378,11 +385,15 @@ const Header = () => {
               
               <Link href="/profile/cart" className="p-2 hover:bg-gray-100 rounded-full transition-colors relative">
                 <ShoppingBag size={20} className="text-gray-600" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
+                {(() => {
+                  const count = cartCount;
+                  console.log('Cart count:', count); // Add logging
+                  return count > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {count}
+                    </span>
+                  );
+                })()}
               </Link>
 
               {/* Mobile Menu Button */}
@@ -409,6 +420,7 @@ const Header = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
               className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center pt-20"
             >
               <div className="bg-white rounded-lg p-4 w-full max-w-md mx-4">
@@ -451,6 +463,7 @@ const Header = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
               className="lg:hidden bg-white border-t z-50"
             >
               <div className="max-w-7xl mx-auto px-4 py-6">

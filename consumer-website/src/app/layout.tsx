@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -26,6 +27,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  console.log('RootLayout rendered'); // Add logging
   return (
     <html lang="en">
       <body
@@ -33,7 +35,9 @@ export default function RootLayout({
       >
         <AuthProvider>
           <CartProvider>
-            <Header />
+            <ErrorBoundary>
+              <Header />
+            </ErrorBoundary>
             <main>{children}</main>
             <Footer />
           </CartProvider>

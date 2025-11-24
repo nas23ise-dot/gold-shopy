@@ -60,10 +60,12 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     
     setLoading(true);
     try {
+      console.log('Refreshing cart, isAuthenticated:', isAuthenticated, 'user:', user);
       if (isAuthenticated && user?.token) {
         // User is authenticated, fetch from API
         try {
           const response = await cartApi.getCart(user.token);
+          console.log('Cart API response:', response);
           
           // Handle different response formats
           let cartData: any = response;
@@ -100,6 +102,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
             });
           }
           
+          console.log('Processed cart items:', items);
           setCartItems(items);
         } catch (apiError) {
           console.error('Failed to fetch cart from API, falling back to localStorage:', apiError);
@@ -108,6 +111,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } else {
         // User not authenticated, use localStorage
+        console.log('User not authenticated, using localStorage for cart');
         setCartItems(getCartItems());
       }
     } catch (error) {
@@ -124,10 +128,12 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     
     setLoading(true);
     try {
+      console.log('Refreshing wishlist, isAuthenticated:', isAuthenticated, 'user:', user); // Add logging
       if (isAuthenticated && user?.token) {
         // User is authenticated, fetch from API
         try {
           const response = await wishlistApi.getWishlist(user.token);
+          console.log('Wishlist API response:', response); // Add logging
           
           // Handle different response formats
           let wishlistData: any = response;
@@ -170,6 +176,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
             });
           }
           
+          console.log('Processed wishlist items:', items); // Add logging
           setWishlistItems(items);
         } catch (apiError) {
           console.error('Failed to fetch wishlist from API, falling back to localStorage:', apiError);
@@ -178,6 +185,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } else {
         // User not authenticated, use localStorage
+        console.log('User not authenticated, using localStorage for wishlist'); // Add logging
         setWishlistItems(getWishlistItems());
       }
     } catch (error) {

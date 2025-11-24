@@ -63,18 +63,49 @@ const createOrder = async (req, res) => {
     }
     
     // Validate and filter items
-    if (!items || !Array.isArray(items) || items.length === 0) {
+    if (!items || !Array.isArray(items)) {
+      return res.status(400).json({ message: 'Items must be an array' });
+    }
+    
+    if (items.length === 0) {
       return res.status(400).json({ message: 'Order must contain at least one item' });
     }
     
+    console.log('Items before validation:', items);
+    
     // Filter out any invalid items (where productId is missing or price is 0 or invalid)
-    const validItems = items.filter(item => 
-      item && 
-      item.productId && 
-      item.quantity > 0 && 
-      typeof item.price === 'number' && 
-      item.price > 0
-    );
+    const validItems = items.filter(item => {
+      console.log('Validating item:', item);
+      
+      // Check if item exists
+      if (!item) {
+        console.log('Item is null or undefined');
+        return false;
+      }
+      
+      // Check productId
+      if (!item.productId) {
+        console.log('Item missing productId:', item.productId);
+        return false;
+      }
+      
+      // Check quantity
+      if (typeof item.quantity !== 'number' || item.quantity <= 0) {
+        console.log('Invalid quantity:', item.quantity);
+        return false;
+      }
+      
+      // Check price
+      if (typeof item.price !== 'number' || item.price <= 0) {
+        console.log('Invalid price:', item.price);
+        return false;
+      }
+      
+      // All checks passed
+      return true;
+    });
+    
+    console.log('Valid items after filtering:', validItems);
     
     if (validItems.length === 0) {
       return res.status(400).json({ 
@@ -126,6 +157,7 @@ const createOrder = async (req, res) => {
     
     res.status(201).json(order);
   } catch (error) {
+    console.error('Error creating order:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

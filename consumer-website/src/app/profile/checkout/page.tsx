@@ -93,17 +93,64 @@ const CheckoutPage = () => {
       return;
     }
 
-    // Validate cart items before placing order
-    const validItems = cartItems.filter(item => 
-      item && 
-      item.id && 
-      item.quantity > 0 && 
-      typeof item.price === 'number' && 
-      item.price > 0 &&
-      item.name && 
-      item.name !== 'undefined' &&
-      item.name.trim() !== ''
-    );
+    // Validate shipping info
+    if (!shippingInfo.fullName || !shippingInfo.address || !shippingInfo.city || 
+        !shippingInfo.state || !shippingInfo.zipCode || !shippingInfo.country || 
+        !shippingInfo.phone) {
+      setError('Please fill in all shipping information');
+      return;
+    }
+
+    // Validate payment info
+    if (!paymentInfo.cardNumber || !paymentInfo.expiryDate || !paymentInfo.cvv || 
+        !paymentInfo.cardName) {
+      setError('Please fill in all payment information');
+      return;
+    }
+
+    // Filter valid items with more detailed validation
+    const validItems = cartItems.filter(item => {
+      // Log item for debugging
+      console.log('Validating item:', item);
+      
+      // Check if item exists and has required properties
+      if (!item) {
+        console.log('Item is null or undefined');
+        return false;
+      }
+      
+      // Check ID
+      if (!item.id && item.id !== 0) {
+        console.log('Item missing ID:', item.id);
+        return false;
+      }
+      
+      // Check quantity
+      if (typeof item.quantity !== 'number' || item.quantity <= 0) {
+        console.log('Invalid quantity:', item.quantity);
+        return false;
+      }
+      
+      // Check price
+      if (typeof item.price !== 'number' || item.price <= 0) {
+        console.log('Invalid price:', item.price);
+        return false;
+      }
+      
+      // Check name
+      if (!item.name || typeof item.name !== 'string' || item.name.trim() === '' || item.name === 'undefined') {
+        console.log('Invalid name:', item.name);
+        return false;
+      }
+      
+      // All checks passed
+      return true;
+    });
+
+    console.log('Cart items:', cartItems); // Debug log
+    console.log('Valid items:', validItems); // Debug log
+    console.log('Cart items length:', cartItems.length);
+    console.log('Valid items length:', validItems.length);
 
     if (validItems.length === 0) {
       setError('Your cart contains no valid items. Please review your cart and try again.');
@@ -144,6 +191,19 @@ const CheckoutPage = () => {
       };
 
       console.log('Placing order with data:', orderData); // Debug log
+
+      // Validate order data before sending
+      if (!orderData.items || orderData.items.length === 0) {
+        throw new Error('Order must contain at least one item');
+      }
+
+      if (!orderData.totalAmount || orderData.totalAmount <= 0) {
+        throw new Error('Invalid total amount');
+      }
+
+      if (!orderData.shippingAddress) {
+        throw new Error('Shipping address is required');
+      }
 
       // Create order through API
       const response = await orderApi.createOrder(user.token, orderData);
